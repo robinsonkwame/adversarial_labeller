@@ -18,3 +18,33 @@ Then we have a cross validator that can be used, reused based on threshold.
 
 should sketch out responsibilties and then decompose with SOLID
 https://scotch.io/bar-talk/s-o-l-i-d-the-first-five-principles-of-object-oriented-design
+--
+
+so I realized later that I could instead break up seperation of concerns and do the following:
+* make a class that accepts a classifier, predicts probability and recieves a dataset, 
+with test examples marked. On fit it learns to predict if an example if test or not
+* make a scorer that accepts a y predicted, y actual and probability of being test instance, returns a scorer
+
+the issue is thst the scorer does not accept other data
+
+estimators have a scoring function, https://github.com/scikit-learn/scikit-learn/blob/1495f6924/sklearn/model_selection/_search.py#L829#L849
+
+let's see if they have access to X (they must?)
+
+okay, see: https://github.com/scikit-learn/scikit-learn/blob/1495f6924/sklearn/base.py#L332
+looks like the cleanest solution is to make a scorer for a estimator mixin and 
+inheriet the base estimator. From there all CV, grid,etc soln shoudl work
+--
+So I should probably make a Transformer that learns to label test, train instances
+pass the transformer as a mixin to classifer mixin, which also takes a custom scorer. 
+I'm nervous that the scorer depends on the transformer
+also see: https://github.com/heykarimoff/solid.python
+
+so, from the above the scorer should have an abstract interface to the transformer, ah but it 
+might not use the scorer except for the predict function, which violates seperation
+
+I think you can use a mixin, letme double check aginast SRP
+is interesting: https://punq.readthedocs.io/en/latest/
+--
+
+okay so I think the cleanest way to do this is start with the Transformer
