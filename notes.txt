@@ -1,0 +1,20 @@
+So i thought I made something like this before but I'm not seeing it.
+
+I think, however, I can use 
+https://scikit-learn.org/stable/modules/cross_validation.html#cross-validation-iterators-for-grouped-data
+Groups, and threshold to create a group.
+
+The most test like group
+
+So it sounds like the first thing to do is to train an estimator that can predictt
+the liklihood of something being in the test set or not
+
+Then given a data set, threshold data
+return https://scikit-learn.org/stable/modules/cross_validation.html#predefined-fold-splits-validation-sets
+predefined split with 0 for the validation set dervied from the dataset
+see: https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.PredefinedSplit.html#sklearn.model_selection.PredefinedSplit
+
+Then we have a cross validator that can be used, reused based on threshold.
+
+should sketch out responsibilties and then decompose with SOLID
+https://scotch.io/bar-talk/s-o-l-i-d-the-first-five-principles-of-object-oriented-design
