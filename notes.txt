@@ -48,3 +48,10 @@ is interesting: https://punq.readthedocs.io/en/latest/
 --
 
 okay so I think the cleanest way to do this is start with the Transformer
+
+-- 
+
+have util functions working, verified the basic structure of the Adversarial labeller works
+
+The AdversarialLabeller, using LR mixin, doesn't seem to also have .solver
+like LR does.
