@@ -6,7 +6,8 @@ from sklearn.linear_model import LogisticRegression
 def read_concat_and_label_test_train_data(test_filename="test.csv",
                                           train_filename="train.csv",
                                           data_dir="./test/fixtures",
-                                          y_columns=['Survived']):
+                                          y_columns=['Survived'],
+                                          label_column="label"):
     drop_args = {
         "axis":"columns",
         "inplace": True
@@ -16,7 +17,7 @@ def read_concat_and_label_test_train_data(test_filename="test.csv",
         "ignore_index": True,
         "sort": False
     }
-    
+
     test_df = pd.read_csv(
         str(Path(data_dir)/Path(test_filename))
     )
@@ -28,10 +29,12 @@ def read_concat_and_label_test_train_data(test_filename="test.csv",
             **concat_args
         )
     df.drop(y_columns, **drop_args)
-    df['label'] = 0
-    df.loc[len(test_df):, 'label'] = 1
+    df[label_column] = 0
+    df.loc[len(test_df):, label_column] = 1
     return df
 
+def get_variable_and_label_columns(df, label_column="label"):
+    return df.drop(label_column, axis='column'), df[label_column] 
 
 class AdversarialClassifier(LogisticRegression):
     # note:  if we wanted this to be dynamic we'd use dependency injection
