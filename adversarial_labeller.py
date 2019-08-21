@@ -2,6 +2,7 @@ from pathlib import Path
 import pandas as pd
 from sklearn.base import TransformerMixin
 from sklearn.linear_model.logistic import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import FunctionTransformer
 
 def read_concat_and_label_test_train_data(test_filename="test.csv",
@@ -47,7 +48,7 @@ MyAdversarialPreprocessor = FunctionTransformer(
     check_inverse=False,
     validate=False)
 
-class MyAdversarialClassifier(LogisticRegression):
+class MyAdversarialClassifier(RandomForestClassifier):
     pass
 
 class AdversarialLabeller(MyAdversarialClassifier, TransformerMixin):
@@ -65,3 +66,16 @@ if __name__ == "__main__":
     adversarial_labeller.fit(preprocessed_values.values, labels.values)
     # e.g. ...
     #   adversarial_labeller.transform(preprocessed_values.values)
+
+    df = read_concat_and_label_test_train_data(label_column='y')
+    variables, labels = get_variable_and_label_columns(df, label_column='y')
+
+    import vtreat
+    plan = vtreat.BinomialOutcomeTreatment(outcome_name="y",
+                                           outcome_target=True)
+    cross_frame = plan.fit_transform(variables, labels.values)
+    adversarial_labeller = AdversarialLabeller()
+    adversarial_labeller.fit(cross_frame.values, labels.values)
+    k = adversarial_labeller.transform(cross_frame.values)
+    #In [123]: roc_auc_score(labels.values, k[:,1])                                  
+    #Out[123]: 0.8499428092729528
