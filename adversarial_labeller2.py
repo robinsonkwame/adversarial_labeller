@@ -60,7 +60,11 @@ if __name__ == "__main__":
 
     # vectorizer 
     vectorizer = CountVectorizer()
-    extra_features = vectorizer.fit_transform(df.Name)
+    extra_features = vectorizer.fit_transform(
+        df.Name\
+          .str.replace(' ','#')\
+          .str.replace(',',',#').str.split('#')
+    )
     # ... todo: figure out way to simply take Mr/Mrs fact of
     # as well as proxy for count of last name on ticket
     #       so this is a fast way but some variables need to be
