@@ -1,6 +1,6 @@
 from pathlib import Path
 import pandas as pd
-from adversarial_labeller import AdversarialRandomForestLabeller
+from adversarial_labeller import AdversarialRandomForestLabeller, AdversarialExtraTreesLabeller
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import FunctionTransformer
 from sklearn.feature_extraction.text import CountVectorizer
@@ -70,7 +70,11 @@ if __name__ == "__main__":
     train_df = preprocessed_values.sample(**sample_args)
     test_df = preprocessed_values.drop(train_df.index)
 
-    adversarial_labeller = AdversarialRandomForestLabeller()
+    adversarial_labeller = AdversarialRandomForestLabeller(
+        args_for_randomforest={
+            "n_estimators":100
+        }
+    )
     adversarial_labeller.fit(
         train_df.values,
         labels[train_df.index].values
@@ -95,7 +99,18 @@ if __name__ == "__main__":
         train_df,
         labels[train_df.index].values
     )
-    adversarial_labeller = AdversarialRandomForestLabeller()
+    adversarial_labeller = AdversarialRandomForestLabeller(
+        args_for_randomforest={
+            "n_estimators":100
+        }
+    )        
+
+    adversarial_labeller = AdversarialExtraTreesLabeller(
+        args_for_classifer={
+            "n_estimators":100
+        }
+    )
+
     adversarial_labeller.fit(
         cross_frame.values,
         labels[train_df.index].values
@@ -195,6 +210,7 @@ if __name__ == "__main__":
     )
     # Gets .76 on hold out
     # Get 0.64593 on test
+    
     mask  = sample_weights == 1
     print(
         accuracy_score(labels[rf_test_df.index][mask].values,

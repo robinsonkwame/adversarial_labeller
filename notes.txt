@@ -74,3 +74,28 @@ take those scored as 1 only: https://www.kaggle.com/kevinbonnes/adversarial-vali
 I am curious about modifying scoring while training 
     like if predicted 1, then weight as 1
     else weight as 0.5
+
+```
+    mask  = sample_weights == 1
+    print(
+        accuracy_score(labels[rf_test_df.index][mask].values,
+                       rf2.predict(rf_test_df[mask].values)
+        )
+    )
+```
+
+GIves 0.68 on hold out, which is a bit closer to 0.64
+---
+Trained with test label detecor AUC of 0.56, however, hold out score is 0.82
+actual score is 0.60 ... so the extra trees memorized the test distribution a tad too much
+
+There is something slightly different, which might affect things:
+* in practice they mark the test examples as 1 and all others as 0
+* They then train on the whole thing, use CV validation, they do not randomly sample
+like I have. 
+* Their AUC to validated result vs actual is much closer
+
+todo: do straight full data set training, see if that makes the actual vs validated
+results much closer. This will allow us to then make a scorer
+that can do validated scoring and drive model parameter selection from the 
+fold, etc.
