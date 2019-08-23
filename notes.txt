@@ -55,3 +55,22 @@ have util functions working, verified the basic structure of the Adversarial lab
 
 The AdversarialLabeller, using LR mixin, doesn't seem to also have .solver
 like LR does.
+
+--
+
+Okay, been a while before I put notes back in htere.
+I've gotten things set up mostly better, I confused myself with the wrong target
+variable. But ther ear some fixes that are needed:
+
+My sample weights are not normalized to add up to one, that needs to happen. 
+I am not sure if it'll affect how the random forest weights its learning though.
+
+I'm seeing a roughly 10 point different between my hold out and Kaggle's hold out
+Yet I'm only getting AUC for predicting if a sample is in test or not
+
+The examples I've seen of adversarial testing 
+take those scored as 1 only: https://www.kaggle.com/kevinbonnes/adversarial-validation
+
+I am curious about modifying scoring while training 
+    like if predicted 1, then weight as 1
+    else weight as 0.5

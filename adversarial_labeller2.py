@@ -148,14 +148,17 @@ if __name__ == "__main__":
     )
 
     rf2 = RandomForestClassifier()
-    rf2.fit(,
-            survived,
+    rf2.fit(rf_train_df.values,
+            labels[rf_train_df.index]
     )
 
     test_cross_frame =\
         plan.transform(
             df.loc[rf_test_df.index]
         )
+    sample_weights =\
+        adversarial_labeller.transform(
+            test_cross_frame)[:, 1]
 
     #  Test on hold out set
     from sklearn.metrics import accuracy_score
@@ -177,46 +180,58 @@ if __name__ == "__main__":
 
     from sklearn.metrics import accuracy_score
     print(
-        accuracy_score(labels[test_df.index].values,
-                       rf2.predict(
-                           plan.transform(test_df)),
-                       sample_weight=\
-                        adversarial_labeller.transform(
-                            plan.transform(test_df))[:, 1]
+        accuracy_score(labels[rf_test_df.index].values,
+                       rf2.predict(rf_test_df.values),
+                       sample_weight=sample_weights
+                        
         )
     )
+    # Gets .763 (higher)
 
     print(
-        accuracy_score(labels[test_df.index].values,
-                       rf2.predict(
-                           plan.transform(test_df))
+        accuracy_score(labels[rf_test_df.index].values,
+                       rf2.predict(rf_test_df.values)
         )
     )
+    # Gets .76 on hold out
+    # Get 0.64593 on test
+    mask  = sample_weights == 1
+    print(
+        accuracy_score(labels[rf_test_df.index][mask].values,
+                       rf2.predict(rf_test_df[mask].values)
+        )
+    )
+    # Gets 0.6875 on score check (0.04 off from test)
+
 
     titanic_df =\
         pd.read_csv('./test/fixtures/test.csv')\
           .drop("PassengerId", axis="columns")
+    titanic_df.index += 892
     preprocessed_titanic_df = MyBasicAdversarialPreprocessor.transform(titanic_df)
+
 
     predictions =\
         rf.predict(preprocessed_titanic_df)
     
     outputs =\
         pd.DataFrame(
-            {'PassengerId': preprocessed_titanic_df.index+1,
+            {'PassengerId': preprocessed_titanic_df.index,
              'Survived': predictions}
         )
     outputs.to_csv('titanic_output.csv', index=False)
-    # gets 0.333 on kaggle
+    # gets 0.333 on kaggle, against label for test instance or not
+    
+    # rewrote to be against train.csv, with vtreat sample weights
+    # under fit
+    # gets 0.59808
 
     predictions2 =\
-        rf2.predict(
-            plan.transform(variables[891:])
-        )
+        rf2.predict(preprocessed_titanic_df)
     
     outputs2 =\
         pd.DataFrame(
-            {'PassengerId': variables[891:].index+1,
+            {'PassengerId': preprocessed_titanic_df.index,
              'Survived': predictions2}
         )
     outputs2.to_csv('titanic_output2.csv', index=False)
