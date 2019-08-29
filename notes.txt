@@ -100,3 +100,37 @@ results much closer. This will allow us to then make a scorer
 that can do validated scoring and drive model parameter selection from the 
 fold, etc.
 --
+
+rewrote some parts, focused on cross validation, saw a lot of variation.
+have an issue with classifiers want to predict 1 a lot. Currently actual
+is target with 0.68 precision, almost full recall, on hold out set.
+
+going to try with only balanced, balanced subsample approaches
+that works a bit better:
+
+Validation Accuracy: 0.61
+              precision    recall  f1-score   support
+
+           0       0.33      0.19      0.24       363
+           1       0.67      0.81      0.74       750
+
+    accuracy                           0.61      1113
+   macro avg       0.50      0.50      0.49      1113
+weighted avg       0.56      0.61      0.57      1113
+
+note: https://github.com/scikit-learn-contrib/imbalanced-learn
+note: https://arxiv.org/abs/1804.07155
+
+using a lower ntrees start, entropy
+
+Accuracy: 0.61 (+/- 0.07)
+Validation Accuracy: 0.61
+              precision    recall  f1-score   support
+
+           0       0.33      0.19      0.24       363
+           1       0.68      0.82      0.74       750
+
+    accuracy                           0.61      1113
+   macro avg       0.51      0.50      0.49      1113
+weighted avg       0.56      0.61      0.58      1113
+

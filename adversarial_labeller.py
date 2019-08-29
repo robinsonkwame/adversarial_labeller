@@ -1,9 +1,21 @@
 import numpy as np
 from sklearn.base import TransformerMixin
 from sklearn.model_selection import RandomizedSearchCV
+from sklearn.neighbors import NearestNeighbors
 from sklearn.linear_model.logistic import LogisticRegression, LogisticRegressionCV
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import ExtraTreesClassifier
+
+class AdversarialNearestNeighborLabeller(NearestNeighbors, TransformerMixin):
+    def __init__(self, fit_params=None):
+        super().__init__(**fit_params)
+        self.params = fit_params
+
+    def transform(self, X):
+        return self.predict_proba(X)
+    
+    def get_params(self, deep=False):
+        return self.params
 
 
 class AdversarialRandomForestLabeller(RandomForestClassifier, TransformerMixin):
@@ -51,14 +63,15 @@ class AdversarialLogisticRegressionCVLabeller(LogisticRegressionCV, TransformerM
 
 class RandomForestRandomizedCV:
     # from https://towardsdatascience.com/hyperparameter-tuning-the-random-forest-in-python-using-scikit-learn-28d2aa77dd74
-    n_estimators = [int(x) for x in np.linspace(start = 200, stop = 2000, num = 10)]
+    n_estimators = [int(x) for x in np.linspace(start = 10, stop = 2000, num = 50)]
     max_features = ['auto', 'sqrt']
     max_depth = [int(x) for x in np.linspace(10, 110, num = 11)]
     max_depth.append(None)
     min_samples_split = [2, 5, 10]
     min_samples_leaf = [1, 2, 4]
     bootstrap = [True, False]
-    class_weight=[None, "balanced", "balanced_subsample"]
+    class_weight= ["balanced", "balanced_subsample"]
+    criterion= ["gini", "entropy"]
 
     random_grid = {'n_estimators': n_estimators,
                    'max_features': max_features,
@@ -66,7 +79,8 @@ class RandomForestRandomizedCV:
                    'min_samples_split': min_samples_split,
                    'min_samples_leaf': min_samples_leaf,
                    'bootstrap': bootstrap,
-                   'class_weight': class_weight}
+                   'class_weight': class_weight,
+                   'criterion': criterion}
     
     def get_best_parameters(self,
                             features,
