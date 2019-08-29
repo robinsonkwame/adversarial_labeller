@@ -3,7 +3,9 @@ import pandas as pd
 from adversarial_labeller import (
     AdversarialRandomForestLabeller,
     AdversarialLogisticRegressionCVLabeller,
-    RandomForestRandomizedCV
+    AdversarialNearestNeighborLabeller,
+    RandomForestRandomizedCV,
+    NearestNeighborsRandomizedCV
     )
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import FunctionTransformer
@@ -120,6 +122,12 @@ if __name__ == "__main__":
     #     n_estimators=50
     # )
 
+    # adversarial_labeller =\
+    #  AdversarialNearestNeighborLabeller(
+    #     n_neighbors=2,
+    #     algorithm='ball_tree'
+    # )
+
     # cross_validator =\
     #     StratifiedShuffleSplit(n_splits=5, test_size=0.3, random_state=1)
     # scores =\
@@ -128,17 +136,25 @@ if __name__ == "__main__":
     #                     labels[train_df.index].values,
     #                     cv=cross_validator)
 
+    # fit_params =\
+    #     RandomForestRandomizedCV().get_best_parameters(
+    #         features=train_df.values,
+    #         labels=labels[train_df.index]
+    #     )
+
+    # adversarial_labeller = AdversarialRandomForestLabeller(
+    #     fit_params=fit_params
+    # )
+
     fit_params =\
-        RandomForestRandomizedCV().get_best_parameters(
+        NearestNeighborsRandomizedCV().get_best_parameters(
             features=train_df.values,
-            labels=labels[train_df.index]
+            labels=labels[train_df.index],
         )
 
-    adversarial_labeller = AdversarialRandomForestLabeller(
+    adversarial_labeller = AdversarialNearestNeighborLabeller(
         fit_params=fit_params
-    )
-
-    adversarial_labeller.fit(
+    ).fit(
         train_df.values,
         labels[train_df.index].values
     )

@@ -1,12 +1,12 @@
 import numpy as np
 from sklearn.base import TransformerMixin
 from sklearn.model_selection import RandomizedSearchCV
-from sklearn.neighbors import NearestNeighbors
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.linear_model.logistic import LogisticRegression, LogisticRegressionCV
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import ExtraTreesClassifier
 
-class AdversarialNearestNeighborLabeller(NearestNeighbors, TransformerMixin):
+class AdversarialNearestNeighborLabeller(KNeighborsClassifier, TransformerMixin):
     def __init__(self, fit_params=None):
         super().__init__(**fit_params)
         self.params = fit_params
@@ -106,3 +106,39 @@ class RandomForestRandomizedCV:
         )
 
         return rf_random.best_params_
+
+class NearestNeighborsRandomizedCV:
+    n_neighbors = [int(x) for x in np.linspace(start = 1, stop = 12, num = 3)]
+    algorithm=['auto']
+    metric=['minkowski', 'cityblock', 'cosine', 'euclidean', 'l1', 'l2', 'manhattan']
+    weights=['uniform', 'distance']
+
+
+    random_grid = {'n_neighbors': n_neighbors,
+                   'algorithm': algorithm,
+                   'metric': metric}
+    
+    def get_best_parameters(self,
+                            features,
+                            labels,
+                            n_iter=100,
+                            cv=3,
+                            verbose=2,
+                            random_state=1,
+                            n_jobs=-1):
+        nn_random =\
+            RandomizedSearchCV(
+                estimator=KNeighborsClassifier(),
+                param_distributions=self.random_grid,
+                n_iter=n_iter,
+                cv=cv,
+                verbose=verbose,
+                random_state=random_state,
+                n_jobs=n_jobs
+            )
+        nn_random.fit(
+            features,
+            labels
+        )
+
+        return nn_random.best_params_
