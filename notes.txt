@@ -99,3 +99,4 @@ todo: do straight full data set training, see if that makes the actual vs valida
 results much closer. This will allow us to then make a scorer
 that can do validated scoring and drive model parameter selection from the 
 fold, etc.
+--
