@@ -176,3 +176,84 @@ imbalanced RUSBoost classifier and leave it at that.
 The final step will be to add more text features and then, finally test against Kaggle
 results from a holdout validation step
 --
+
+okay do a full rusboost run (that was too long), gotten
+
+Validation Accuracy: 0.34
+              precision    recall  f1-score   support
+
+           0       0.32      0.90      0.47       363
+           1       0.58      0.07      0.12       750
+
+    accuracy                           0.34      1113
+   macro avg       0.45      0.48      0.29      1113
+weighted avg       0.50      0.34      0.23      1113
+
+Given that that this is a binary problem, it would seem that I could flip the deicsions and get 
+a validation accuracy of 0.66?
+
+Yeah, this is funny:
+
+In [93]:     print( 
+    ...:         "Validation Accuracy: %0.2f" % ( 
+    ...:             accuracy_score( 
+    ...:                 labels[test_df.index], 
+    ...:                 adversarial_labeller.predict( 
+    ...:                     test_df.values 
+    ...:                 ) ^ 1 
+    ...:             ) 
+    ...:         ) 
+    ...:     )                                                                          
+Validation Accuracy: 0.66
+(note the ^ 1 for bit flipping)
+and
+
+In [94]:     print( 
+    ...:         classification_report( 
+    ...:             y_true= labels[test_df.index], 
+    ...:             y_pred= adversarial_labeller.predict( 
+    ...:                         test_df.values 
+    ...:                     ) ^ 1 
+    ...:         ) 
+    ...:     )                                                                          
+              precision    recall  f1-score   support
+
+           0       0.42      0.10      0.16       363
+           1       0.68      0.93      0.79       750
+
+    accuracy                           0.66      1113
+   macro avg       0.55      0.52      0.47      1113
+weighted avg       0.59      0.66      0.58      1113
+
+k, I've taken this about as far as I should go. 
+
+I think at this point I'm at the essential question (and probably over fitting
+to one data set) of whether for adversarial validation is better having
+A) a higher accuracy (validating against those prediced to be 1) or
+B) a higher predicted probably (e.g. prob = 1)
+
+I think the answer is strongly influenced by the data drift present since (A) 
+brings in non test like samples for validation. The score could also be weighted by
+sample confidence but the RUSBooster seems to give one of two confidences and that's it.
+
+okay so what I shoudl do is wrap this part up
+
+The rusbooster appears to be best, ignoring the predicited probability
+
+Okay, I think I'm done at this part, just need to capture the code in main() 
+and make into a function to build out the labeller. Actually I think I'm done,
+running fit and then maiximize adversarl validation seperates concerns and isn'tad
+a big lift
+
+okay so the next steps next week (if I don't abandon this work due to a wave of new 
+class work) is to:
+* holdout some data
+* train a normal random forest on the remaining data
+* label the hold out as in test or out of test
+* get teh accuracy score on the in test hold out data using the RF and known label
+* that score should be +/- 3 points within the Kaggle result (ideally)
+
+If that doesn't work then that might suggest that the predict probabilities are more important
+(although I feel liek might've failed way back when?), then figure out an approaches
+that maximizes predicted probabilty as well as gets punished for predicting all 1s
+--

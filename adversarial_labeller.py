@@ -1,4 +1,5 @@
 import numpy as np
+from sklearn.metrics import accuracy_score
 from sklearn.base import TransformerMixin
 from sklearn.model_selection import RandomizedSearchCV, GridSearchCV
 from sklearn.neighbors import KNeighborsClassifier
@@ -7,10 +8,12 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import ExtraTreesClassifier
 from imblearn.ensemble import BalancedRandomForestClassifier, RUSBoostClassifier
 
-class AdversarialNearestNeighborLabeller(KNeighborsClassifier, TransformerMixin):
+  
+class AdversarialRUSBoostLabeller(RUSBoostClassifier, TransformerMixin):
     def __init__(self, fit_params=None):
         super().__init__(**fit_params)
         self.params = fit_params
+        self.flip_binary_predictions = False
 
     def transform(self, X):
         return self.predict_proba(X)
@@ -18,10 +21,27 @@ class AdversarialNearestNeighborLabeller(KNeighborsClassifier, TransformerMixin)
     def get_params(self, deep=False):
         return self.params
 
-class AdversarialRUSBoostLabeller(RUSBoostClassifier, TransformerMixin):
+    def maximize_binary_validation_accuracy(self, X, y):
+        validation_score =\
+            accuracy_score(
+                y,
+                self.predict(X)
+            )
+        if validation_score < 0.50:
+            self.flip_binary_predictions = True
+
+    def label(self, X):
+        predictions = self.predict(X)
+        if self.flip_binary_predictions:
+            predictions ^= 1
+
+        return predictions
+
+class AdversarialNearestNeighborLabeller(KNeighborsClassifier, TransformerMixin):
     def __init__(self, fit_params=None):
         super().__init__(**fit_params)
         self.params = fit_params
+        self.flip_binary_predictions = False
 
     def transform(self, X):
         return self.predict_proba(X)
@@ -71,6 +91,49 @@ class AdversarialLogisticRegressionCVLabeller(LogisticRegressionCV, TransformerM
             'random-state': self.random_state,
             'cv': self.cv
         }
+
+class RUSBoostRandomizedCV:
+    n_estimators = [int(x) for x in np.linspace(start = 50, stop = 200, num = 10)]
+    learning_rate = np.linspace(1, 30, 20)
+    algorithm=['SAMME.R']  # SAMME will throw ValueError under AdaBoost
+    sampling_strategy = ["majority", "not minority", "not majority", "all"]
+    replacement = [True, False]
+
+    random_grid = {'n_estimators': n_estimators,
+                   'learning_rate': learning_rate,
+                   'algorithm': algorithm,
+                   'sampling_strategy': sampling_strategy,
+                   'replacement': replacement}
+
+    random_grid = {'algorithm': algorithm,
+                   'replacement': replacement,
+                   'learning_rate': learning_rate,
+                   'n_estimators': n_estimators,
+                   'sampling_strategy': sampling_strategy}
+    
+    def get_best_parameters(self,
+                            features,
+                            labels,
+                            base_estimator=None,
+                            n_iter=100,
+                            cv=3,
+                            verbose=2,
+                            random_state=1,
+                            n_jobs=-1):
+        clf_random =\
+            GridSearchCV(
+                estimator=RUSBoostClassifier(),
+                param_grid=self.random_grid,
+                cv=cv,
+                verbose=verbose,
+                n_jobs=n_jobs
+            )
+        clf_random.fit(
+            features,
+            labels
+        )
+
+        return clf_random.best_params_
 
 class RandomForestRandomizedCV:
     # from https://towardsdatascience.com/hyperparameter-tuning-the-random-forest-in-python-using-scikit-learn-28d2aa77dd74
@@ -124,7 +187,6 @@ class NearestNeighborsRandomizedCV:
     metric=['minkowski', 'cityblock', 'cosine', 'euclidean', 'l1', 'l2', 'manhattan']
     weights=['uniform', 'distance']
 
-
     random_grid = {'n_neighbors': n_neighbors,
                    'algorithm': algorithm,
                    'metric': metric}
@@ -153,45 +215,3 @@ class NearestNeighborsRandomizedCV:
         )
 
         return nn_random.best_params_
-
-class RUSBoostRandomizedCV:
-    n_estimators = [int(x) for x in np.linspace(start = 50, stop = 200, num = 10)]
-    learning_rate = np.linspace(1, 30, 20)
-    algorithm=['SAMME.R']
-    sampling_strategy = ["majority", "not minority", "not majority", "all"]
-    replacement = [True, False]
-
-    random_grid = {'n_estimators': n_estimators,
-                   'learning_rate': learning_rate,
-                   'algorithm': algorithm,
-                   'sampling_strategy': sampling_strategy,
-                   'replacement': replacement}
-
-    random_grid = {'algorithm': algorithm,
-                   'replacement': replacement,
-                   'learning_rate': learning_rate,
-                   'n_estimators': n_estimators}
-    
-    def get_best_parameters(self,
-                            features,
-                            labels,
-                            base_estimator=None,
-                            n_iter=100,
-                            cv=3,
-                            verbose=2,
-                            random_state=1,
-                            n_jobs=-1):
-        clf_random =\
-            GridSearchCV(
-                estimator=RUSBoostClassifier(),
-                param_grid=self.random_grid,
-                cv=cv,
-                verbose=verbose,
-                n_jobs=n_jobs
-            )
-        clf_random.fit(
-            features,
-            labels
-        )
-
-        return clf_random.best_params_
