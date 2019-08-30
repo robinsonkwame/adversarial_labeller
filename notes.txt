@@ -141,9 +141,38 @@ Validation Accuracy: 0.66
 
            0       0.37      0.06      0.11       363
            1       0.68      0.95      0.79       750
-
     accuracy                           0.66      1113
    macro avg       0.52      0.51      0.45      1113
 weighted avg       0.58      0.66      0.57      1113
 
 the arxiv paper above inspired me to try kNN
+---
+imported imbalnced sklearn
+with balanced random forest we getting
+Validation Accuracy: 0.51
+              precision    recall  f1-score   support
+
+           0       0.34      0.56      0.43       363
+           1       0.69      0.49      0.57       750
+
+    accuracy                           0.51      1113
+   macro avg       0.52      0.52      0.50      1113
+weighted avg       0.58      0.51      0.52      1113
+
+(note the Accuracy scores above were printing old score info, hence being the same; i think)
+
+okay, so what I really want is to essentially make a labeller that is a pretty 
+much always correct when the predicted probabilty is a 1. I don't particularly wnat to
+muck around too much so I can, instead, attempt to maximize the F1 score of both
+in test and out of test predictions.
+
+In a sense, because imbalance respects class imbalance, I can probably use
+maximizing the in test class F1 score and it won't go off the rails and say
+everythign is a 1 (gettin ga accuracy of 0.67 but 0 for out of class)
+
+so What I should do here to close out this fork of work is make an parameter _search
+imbalanced RUSBoost classifier and leave it at that.
+
+The final step will be to add more text features and then, finally test against Kaggle
+results from a holdout validation step
+--

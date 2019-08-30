@@ -12,6 +12,7 @@ sklearn = "*"
 pandas = "*"
 vtreat = "*"
 featuretools = "*"
+imbalanced-learn = "*"
 
 [requires]
 python_version = "3.7"

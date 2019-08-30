@@ -5,12 +5,14 @@ from adversarial_labeller import (
     AdversarialLogisticRegressionCVLabeller,
     AdversarialNearestNeighborLabeller,
     RandomForestRandomizedCV,
-    NearestNeighborsRandomizedCV
+    NearestNeighborsRandomizedCV,
+    RUSBoostRandomizedCV,
+    AdversarialRUSBoostLabeller
     )
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import FunctionTransformer
 from sklearn.feature_extraction.text import CountVectorizer
-
+from imblearn.ensemble import BalancedRandomForestClassifier, RUSBoostClassifier
 
 def read_concat_and_label_test_train_data(test_filename="test.csv",
                                           train_filename="train.csv",
@@ -146,21 +148,45 @@ if __name__ == "__main__":
     #     fit_params=fit_params
     # )
 
+    # fit_params =\
+    #     NearestNeighborsRandomizedCV().get_best_parameters(
+    #         features=train_df.values,
+    #         labels=labels[train_df.index],
+    #     )
+
+    # adversarial_labeller = AdversarialNearestNeighborLabeller(
+    #     fit_params=fit_params
+    # ).fit(
+    #     train_df.values,
+    #     labels[train_df.index].values
+    # )
+
+
+    # adversarial_labeller = BalancedRandomForestClassifier(
+    #     n_estimators=100,
+    #     random_state=0
+    # ).fit(
+    #     train_df.values,
+    #     labels[train_df.index].values
+    # )
+
+
     fit_params =\
-        NearestNeighborsRandomizedCV().get_best_parameters(
+        RUSBoostRandomizedCV().get_best_parameters(
+            n_iter=50,
             features=train_df.values,
             labels=labels[train_df.index],
         )
 
-    adversarial_labeller = AdversarialNearestNeighborLabeller(
+    adversarial_labeller = AdversarialRUSBoostLabeller(
         fit_params=fit_params
     ).fit(
         train_df.values,
         labels[train_df.index].values
     )
 
-    print(
-        "Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+    # print(
+    #     "Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
 
     print(
         "Validation Accuracy: %0.2f" % (
