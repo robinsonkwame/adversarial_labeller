@@ -171,19 +171,27 @@ if __name__ == "__main__":
     # # its accuracy against the test labeled hold out and compare to Kaggle score
 
     # # ... first need to read in Survived values for train_df and use in fit
-    data = get_train_test_validate(fillna=True)
+    data = get_train_validate(fillna=True)
     clf = RandomForestClassifier(n_estimators=100)
     clf.fit(data["train"]["data"],
             data["train"]["labels"])
     
     # ... now we mark those instances as in test or not
+    preprocessed_values =\
+        MyBasicAdversarialPreprocessor.transform(
+            data["validate"]["data"]
+        )
+    preprocessed_values.drop("PassengerId", axis="columns", inplace=True)
+
     labelled_test_mask =\
         adversarial_labeller.predict(
-            titanic_train_df.values
+            preprocessed_values.values
         ) == 1
 
-    # # and use that test labeled set as a validation set, compare to Kaggle
-    # accuracy_score(
-    #     y_true= labels[test_df.index & labelled_test_mask],
-    #     y_pred= clf.predict(test_df[labelled_test_mask].values)
-    # )
+    # and use that test labeled set as a validation set, compare to Kaggle
+    accuracy_score(
+        y_true= data["validate"]["labels"],
+        y_pred= clf.predict(
+          data["validate"]["data"][labelled_test_mask].values
+        )
+    )
