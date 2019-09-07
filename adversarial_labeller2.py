@@ -21,15 +21,13 @@ def get_target_labels(test_filename="test.csv",
         )[y_columns]
     return df
 
-def get_train_test_validate(train_filename="train.csv",
+def get_train_validate(train_filename="train.csv",
                             data_dir="./test/fixtures",
                             fillna=True,
                             fillna_value=0,
                             label_column="Survived",
                             drop_columns=["Name", "Sex", "Ticket", "Cabin", "Embarked"],
-                            train_ratio = 0.80,
-                            validation_ratio = 0.10,
-                            test_ratio = 0.10):
+                            train_ratio = 0.85):
     drop_args = {
         "axis":"columns",
         "inplace": True
@@ -52,23 +50,14 @@ def get_train_test_validate(train_filename="train.csv",
                          train_df.loc[:, label_column],
                          test_size = 1 - train_ratio)
 
-    x_val, x_test, y_val, y_test =\
-        train_test_split(x_test,
-                         y_test,
-                         test_size= test_ratio/(test_ratio + validation_ratio))
-
     return {
         "train": {
             "labels": y_train,
             "data": x_train
         },
-        "test": {
+        "validate": {
             "labels": y_test,
             "data": x_test
-        },
-        "validate": {
-            "labels": y_val,
-            "data": x_val
         }
     }
 
