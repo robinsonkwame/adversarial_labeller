@@ -7,6 +7,70 @@ from adversarial_labeller import (
 from sklearn.preprocessing import FunctionTransformer
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics import accuracy_score, classification_report
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+
+
+def get_target_labels(test_filename="test.csv",
+                      train_filename="train.csv",
+                      data_dir="./test/fixtures",
+                      y_columns=['Survived']):
+    df =\
+        pd.read_csv(
+            str(Path(data_dir)/Path(train_filename))
+        )[y_columns]
+    return df
+
+def get_train_test_validate(train_filename="train.csv",
+                            data_dir="./test/fixtures",
+                            fillna=True,
+                            fillna_value=0,
+                            label_column="Survived",
+                            drop_columns=["Name", "Sex", "Ticket", "Cabin", "Embarked"],
+                            train_ratio = 0.80,
+                            validation_ratio = 0.10,
+                            test_ratio = 0.10):
+    drop_args = {
+        "axis":"columns",
+        "inplace": True
+    }
+
+    fillna_args = {
+        "inplace": True
+    }
+
+    train_df = pd.read_csv(
+        str(Path(data_dir)/Path(train_filename))
+    )
+
+    train_df.drop(drop_columns, **drop_args)
+    train_df.fillna(fillna_value, **fillna_args)
+
+    # ... construct train, test and validate from repeated splits
+    x_train, x_test, y_train, y_test =\
+        train_test_split(train_df.drop(label_column, axis="columns"),
+                         train_df.loc[:, label_column],
+                         test_size = 1 - train_ratio)
+
+    x_val, x_test, y_val, y_test =\
+        train_test_split(x_test,
+                         y_test,
+                         test_size= test_ratio/(test_ratio + validation_ratio))
+
+    return {
+        "train": {
+            "labels": y_train,
+            "data": x_train
+        },
+        "test": {
+            "labels": y_test,
+            "data": x_test
+        },
+        "validate": {
+            "labels": y_val,
+            "data": x_val
+        }
+    }
 
 def read_concat_and_label_test_train_data(test_filename="test.csv",
                                           train_filename="train.csv",
@@ -71,13 +135,13 @@ if __name__ == "__main__":
         MyBasicAdversarialPreprocessor.transform(
             variables
         )
-    test_df, train_df = get_test_train_samples(
+    train_df, test_df = get_test_train_samples(
         preprocessed_values
     )
 
     fit_params =\
         RUSBoostRandomizedCV().get_best_parameters(
-            n_iter=5,
+            n_iter=1,
             features=train_df.values,
             labels=labels[train_df.index],
         )
@@ -113,3 +177,24 @@ if __name__ == "__main__":
                     )
         )
     )
+
+    # # Now we train a stock random forest classifiers and test
+    # # its accuracy against the test labeled hold out and compare to Kaggle score
+
+    # # ... first need to read in Survived values for train_df and use in fit
+    data = get_train_test_validate(fillna=True)
+    clf = RandomForestClassifier(n_estimators=100)
+    clf.fit(data["train"]["data"],
+            data["train"]["labels"])
+    
+    # ... now we mark those instances as in test or not
+    labelled_test_mask =\
+        adversarial_labeller.predict(
+            titanic_train_df.values
+        ) == 1
+
+    # # and use that test labeled set as a validation set, compare to Kaggle
+    # accuracy_score(
+    #     y_true= labels[test_df.index & labelled_test_mask],
+    #     y_pred= clf.predict(test_df[labelled_test_mask].values)
+    # )

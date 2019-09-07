@@ -94,7 +94,7 @@ class AdversarialLogisticRegressionCVLabeller(LogisticRegressionCV, TransformerM
 
 class RUSBoostRandomizedCV:
     n_estimators = [int(x) for x in np.linspace(start = 50, stop = 200, num = 10)]
-    learning_rate = np.linspace(1, 30, 20)
+    learning_rate = np.linspace(1, 30, 10)
     algorithm=['SAMME.R']  # SAMME will throw ValueError under AdaBoost
     sampling_strategy = ["majority", "not minority", "not majority", "all"]
     replacement = [True, False]
@@ -115,9 +115,9 @@ class RUSBoostRandomizedCV:
                             features,
                             labels,
                             base_estimator=None,
-                            n_iter=100,
-                            cv=3,
-                            verbose=2,
+                            n_iter=20,
+                            cv=2,
+                            verbose=1,
                             random_state=1,
                             n_jobs=-1):
         clf_random =\
