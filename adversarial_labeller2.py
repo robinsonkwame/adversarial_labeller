@@ -190,8 +190,39 @@ if __name__ == "__main__":
 
     # and use that test labeled set as a validation set, compare to Kaggle
     accuracy_score(
-        y_true= data["validate"]["labels"],
+        y_true= data["validate"]["labels"][labelled_test_mask].values,
         y_pred= clf.predict(
           data["validate"]["data"][labelled_test_mask].values
         )
     )
+
+    # ... finally we generate a prediction and compare against an oracle (Kaggle in this case)
+    titanic_submit_df =\
+        pd.read_csv(
+            "./test/fixtures/test.csv"
+        )
+    drop_columns=["Name", "Sex", "Ticket", "Cabin", "Embarked"]
+    fillna_value = 0       
+    drop_args = {
+        "axis":"columns",
+        "inplace": True
+    }
+
+    fillna_args = {
+        "inplace": True
+    }
+    titanic_submit_df.drop(drop_columns, **drop_args)
+    titanic_submit_df.fillna(fillna_value, **fillna_args)
+
+    submission =\
+        pd.DataFrame(
+            {
+                "PassengerId": titanic_submit_df["PassengerId"],
+                "Survived":\
+                    clf.predict(
+                        titanic_submit_df.values
+                    )
+            }
+
+        )
+    submission.to_csv("inital_cv_67.csv", index=False)

@@ -257,3 +257,19 @@ If that doesn't work then that might suggest that the predict probabilities are 
 (although I feel liek might've failed way back when?), then figure out an approaches
 that maximizes predicted probabilty as well as gets punished for predicting all 1s
 --
+
+okay, so in a way I have an inital success
+adverarial labelling predicts 0.67
+Kaggle gave 0.66985
+
+The thing is my adverarial labeller, in this case, was trained with a minimal set of checking to speed
+up dev time. What I watn to do is switch to a random CV, get a good version and try again.
+
+the other thing that bothers me is how complex this is to set up, i kinda wnat a one function call
+you give it the data, a classifier and it'll return an adversarial validation score.
+
+but I defintely got where i wanted today, need to test against a well cross validated parameter set
+and verify it still works as expected.
+
+then i should try it against a different type of classifier and then rearchitect slightly for ease of use
+we can already drop it into sklearn fairly easily.
