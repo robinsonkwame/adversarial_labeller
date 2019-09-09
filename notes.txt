@@ -273,3 +273,12 @@ and verify it still works as expected.
 
 then i should try it against a different type of classifier and then rearchitect slightly for ease of use
 we can already drop it into sklearn fairly easily.
+--
+
+So I did some deeper searching, around sklearn pipelines, and it turns out there's a
+cross validator that accepts a scoring function, here I would not use the make_scorer
+see sklearn 3.3.1.3: Implementing your own scoring object.
+
+This is what teh adversial labeller needs to be written as, then labels X
+and only evaluates on those X labelled as test.
+--
