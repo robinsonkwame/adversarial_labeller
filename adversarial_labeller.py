@@ -169,7 +169,7 @@ class AdversarialLabelerFactory(object):
         self.best_params = best_params
         return best_params
 
-    def fit_with_best_params(self):
+    def fit_with_best_params(self, verbose=True):
         best_params = self.best_params
         if not self.best_params:
             best_params = self.get_best_parameters()
@@ -188,25 +188,26 @@ class AdversarialLabelerFactory(object):
             labels[self.test_df.index]
         )
 
-        print(
-            "Validation Accuracy: %0.2f" % (
-                accuracy_score(
-                    labels[self.test_df.index],
-                    fitted_labeler.predict(
-                        self.test_df.values
+        if verbose:
+            print(
+                "Validation Accuracy: %0.2f" % (
+                    accuracy_score(
+                        labels[self.test_df.index],
+                        fitted_labeler.predict(
+                            self.test_df.values
+                        )
                     )
                 )
             )
-        )
 
-        print(
-            classification_report(
-                y_true= labels[self.test_df.index],
-                y_pred= fitted_labeler.predict(
-                            self.test_df.values
-                        )
+            print(
+                classification_report(
+                    y_true= labels[self.test_df.index],
+                    y_pred= fitted_labeler.predict(
+                                self.test_df.values
+                            )
+                )
             )
-        )
 
         # ... return pipeline object that includes
         # the inital_pipeline + this fitted adversarial labeler

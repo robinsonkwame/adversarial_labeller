@@ -297,3 +297,42 @@ okay, got basic inital for factory, let's commit
 --
 so now I want to get the get_best_paramet working, then make it actually return a fitted
 adverarial labeller (that calls the pipeline on it too)
+-
+
+So the pipeline object works, needs to be called with
+In [89]:     labelled_test_mask =\ 
+    ...:         fit.predict( 
+    ...:             data['validate']['data'].drop("PassengerId", axis="columns") 
+    ...:         ) == 1    
+   
+which is kinda weird but it's a function of how I set up the preprocessor
+and what data I fed it
+
+with the above we get
+In [93]:     # and use that test labeled set as a validation set, compare to Kaggle 
+    ...:     accuracy_score( 
+    ...:         y_true= data["validate"]["labels"][labelled_test_mask].values, 
+    ...:         y_pred= clf.predict( 
+    ...:           data["validate"]["data"][labelled_test_mask].values 
+    ...:         ) 
+    ...:     ) 
+    ...:                                                                                                                                  
+Out[93]: 0.6940298507462687
+
+and I noticed that it says all labels are true on the hold out set
+and we already predicted against that and got 0.67, so I will skip that
+verification for now (?)
+
+Goign to callit, next steps are to:
+
+* test against / add in scorer for custom cross validation scorer,
+see: https://scikit-learn.org/stable/modules/model_evaluation.html#implementing-your-own-scoring-object
+for gory details
+
+* rewrite main, the example file to use the piepeline, provide 
+fixture specific test files (should make this a test I suppose), move
+to unit test, but add as to read me as a simple example
+
+* verify adversarial accuracy is mostly spot on (w/in -/+ 1 point of accuracy)
+
+* modify so it's pip installable
