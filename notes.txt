@@ -282,3 +282,16 @@ see sklearn 3.3.1.3: Implementing your own scoring object.
 This is what teh adversial labeller needs to be written as, then labels X
 and only evaluates on those X labelled as test.
 --
+
+so the adverarial part would need it's own transformer I think (or none)
+it actaully may need a mini transform pipeline
+so I think I would actually train the a...
+
+okay, so you would make a factory of sorts that trans, generates
+a pipeline that ends in the adversarial labeller and can be dropped in
+the factory needs the rigth input, any pipeline components as well and then
+append the trained adversarial predictor to the end of it. Kinda annoying
+but this will make it drop in easy.
+---
+okay, got basic inital for factory, let's commit
+--

@@ -92,6 +92,74 @@ class AdversarialLogisticRegressionCVLabeller(LogisticRegressionCV, TransformerM
             'cv': self.cv
         }
 
+def get_test_train_samples(df,
+                           sample_args=None):
+    if not sample_args:
+        sample_args =\
+            {
+                "frac": 0.85,
+                "random_state": 1
+            }
+    train_df = df.sample(**sample_args)
+    test_df = df.drop(train_df.index)
+
+    return train_df, test_df  # should have an API manager?
+
+class AdversarialLabelerFactory(object):
+    def __init__(self,
+                 features,
+                 labels,
+                 inital_pipeline,
+                 run_pipeline=True,
+                 labeler_type="RUSBoostRandomizedCV",
+                 labeler_args={"n_iter": 1},
+                 get_test_train_samples=get_test_train_samples):
+        self.features = features
+        self.labels = labels
+        self.inital_pipeline = inital_pipeline
+        self.labeler_type = labeler_type
+        self.labeler_args = labeler_args
+        self.labeler = None
+        if "RURUSBoostRandomizedCVSBoost" == type:
+            self.labeler = RUSBoostRandomizedCV()
+
+        self.ran_pipelne = False
+        if run_pipeline:
+            self.features =\
+                self.inital_pipeline.transform(
+                    self.features
+                )
+            self.ran_pipelne = True
+
+        self.train_df, self.test_df =\
+            get_test_train_samples(
+                self.features
+            )
+
+    def _get_features(self):
+        return self.train_df
+
+    def _get_labels(self):
+        return self.labels
+
+    def get_best_parameters(self,
+                            features=None,
+                            labels=None):
+        features = features
+        if not features:
+            features = self._get_features()
+
+        labels = labels
+        if not labels:
+            labels = self._get_labels()
+
+        return self.labeler.get_best_parameters(
+            features=features.values,
+            labels=labels[features.index],
+            **self.labeler_args
+        )
+
+
 class RUSBoostRandomizedCV:
     n_estimators = [int(x) for x in np.linspace(start = 50, stop = 200, num = 10)]
     learning_rate = np.linspace(1, 30, 10)
@@ -121,13 +189,23 @@ class RUSBoostRandomizedCV:
                             random_state=1,
                             n_jobs=-1):
         clf_random =\
-            GridSearchCV(
+            RandomizedSearchCV(
                 estimator=RUSBoostClassifier(),
-                param_grid=self.random_grid,
+                param_distributions=self.random_grid,
+                n_iter=n_iter,
                 cv=cv,
                 verbose=verbose,
+                random_state=random_state,
                 n_jobs=n_jobs
             )
+        # clf_random =\
+        #     GridSearchCV(
+        #         estimator=RUSBoostClassifier(),
+        #         param_grid=self.random_grid,
+        #         cv=cv,
+        #         verbose=verbose,
+        #         n_jobs=n_jobs
+        #     )
         clf_random.fit(
             features,
             labels
