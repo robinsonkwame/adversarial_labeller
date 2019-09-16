@@ -295,3 +295,5 @@ but this will make it drop in easy.
 ---
 okay, got basic inital for factory, let's commit
 --
+so now I want to get the get_best_paramet working, then make it actually return a fitted
+adverarial labeller (that calls the pipeline on it too)

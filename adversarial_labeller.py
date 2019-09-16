@@ -1,5 +1,5 @@
 import numpy as np
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, classification_report
 from sklearn.base import TransformerMixin
 from sklearn.model_selection import RandomizedSearchCV, GridSearchCV
 from sklearn.neighbors import KNeighborsClassifier
@@ -7,8 +7,9 @@ from sklearn.linear_model.logistic import LogisticRegression, LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import ExtraTreesClassifier
 from imblearn.ensemble import BalancedRandomForestClassifier, RUSBoostClassifier
+from sklearn.pipeline import make_pipeline
+from imblearn.pipeline import Pipeline as ImbalancedPipeline  
 
-  
 class AdversarialRUSBoostLabeller(RUSBoostClassifier, TransformerMixin):
     def __init__(self, fit_params=None):
         super().__init__(**fit_params)
@@ -111,17 +112,19 @@ class AdversarialLabelerFactory(object):
                  labels,
                  inital_pipeline,
                  run_pipeline=True,
-                 labeler_type="RUSBoostRandomizedCV",
-                 labeler_args={"n_iter": 1},
+                 param_searcher="RUSBoostRandomizedCV",
+                 labeler_type="AdversarialRUSBoostLabeller",
                  get_test_train_samples=get_test_train_samples):
         self.features = features
         self.labels = labels
         self.inital_pipeline = inital_pipeline
         self.labeler_type = labeler_type
-        self.labeler_args = labeler_args
         self.labeler = None
-        if "RURUSBoostRandomizedCVSBoost" == type:
-            self.labeler = RUSBoostRandomizedCV()
+        self.searcher = None
+        if "RUSBoostRandomizedCV" == param_searcher:
+            self.searcher = RUSBoostRandomizedCV
+        if "AdversarialRUSBoostLabeller" == self.labeler_type:
+            self.labeler = AdversarialRUSBoostLabeller
 
         self.ran_pipelne = False
         if run_pipeline:
@@ -136,29 +139,81 @@ class AdversarialLabelerFactory(object):
                 self.features
             )
 
+        self.best_params = None
+
     def _get_features(self):
         return self.train_df
 
     def _get_labels(self):
         return self.labels
 
+    def get_features_and_labels(self):
+        return self._get_features(), self._get_labels()
+
     def get_best_parameters(self,
                             features=None,
-                            labels=None):
-        features = features
-        if not features:
-            features = self._get_features()
+                            labels=None,
+                            randomized_grid_search_args={
+                                "n_iter":50
+                            }):
 
-        labels = labels
-        if not labels:
-            labels = self._get_labels()
+        features, labels = self.get_features_and_labels()
 
-        return self.labeler.get_best_parameters(
-            features=features.values,
-            labels=labels[features.index],
-            **self.labeler_args
+        best_params =\
+            self.searcher().get_best_parameters(
+                features=features.values,
+                labels=labels[features.index],
+                **randomized_grid_search_args
+            )
+        
+        self.best_params = best_params
+        return best_params
+
+    def fit_with_best_params(self):
+        best_params = self.best_params
+        if not self.best_params:
+            best_params = self.get_best_parameters()
+
+        features, labels = self.get_features_and_labels()
+
+        fitted_labeler = self.labeler(
+            fit_params=best_params
+        ).fit(
+            features.values,
+            labels[features.index].values
         )
 
+        fitted_labeler.maximize_binary_validation_accuracy(
+            self.test_df.values,
+            labels[self.test_df.index]
+        )
+
+        print(
+            "Validation Accuracy: %0.2f" % (
+                accuracy_score(
+                    labels[self.test_df.index],
+                    fitted_labeler.predict(
+                        self.test_df.values
+                    )
+                )
+            )
+        )
+
+        print(
+            classification_report(
+                y_true= labels[self.test_df.index],
+                y_pred= fitted_labeler.predict(
+                            self.test_df.values
+                        )
+            )
+        )
+
+        # ... return pipeline object that includes
+        # the inital_pipeline + this fitted adversarial labeler
+        return ImbalancedPipeline([
+            ('inital_pipeline', self.inital_pipeline),
+            ('adversarial_labeler', fitted_labeler)
+        ])
 
 class RUSBoostRandomizedCV:
     n_estimators = [int(x) for x in np.linspace(start = 50, stop = 200, num = 10)]
@@ -198,14 +253,7 @@ class RUSBoostRandomizedCV:
                 random_state=random_state,
                 n_jobs=n_jobs
             )
-        # clf_random =\
-        #     GridSearchCV(
-        #         estimator=RUSBoostClassifier(),
-        #         param_grid=self.random_grid,
-        #         cv=cv,
-        #         verbose=verbose,
-        #         n_jobs=n_jobs
-        #     )
+
         clf_random.fit(
             features,
             labels
