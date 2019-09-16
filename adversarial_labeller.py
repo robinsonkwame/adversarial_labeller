@@ -104,7 +104,7 @@ def get_test_train_samples(df,
     train_df = df.sample(**sample_args)
     test_df = df.drop(train_df.index)
 
-    return train_df, test_df  # should have an API manager?
+    return train_df, test_df
 
 class AdversarialLabelerFactory(object):
     def __init__(self,
