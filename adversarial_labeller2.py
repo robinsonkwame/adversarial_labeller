@@ -95,9 +95,6 @@ def read_concat_and_label_test_train_data(test_filename="test.csv",
 def get_variable_and_label_columns(df, label_column="label"):
     return df.drop(label_column, axis='columns'), df[label_column] 
 
-def keep_numeric_columns_only_replace_na(df: pd.DataFrame):
-    return df.select_dtypes(include='number')\
-             .fillna(value=-1, axis="columns")
 
 MyBasicAdversarialPreprocessor = FunctionTransformer(
     keep_numeric_columns_only_replace_na,
