@@ -252,7 +252,8 @@ class RUSBoostRandomizedCV:
                 cv=cv,
                 verbose=verbose,
                 random_state=random_state,
-                n_jobs=n_jobs
+                n_jobs=n_jobs,
+                iid=False
             )
 
         clf_random.fit(

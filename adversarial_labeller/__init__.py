@@ -1,1 +1,2 @@
 from .adversarial_labeller import AdversarialLabelerFactory
+from .adversarial_scoring import Scorer

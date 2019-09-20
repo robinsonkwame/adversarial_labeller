@@ -11,8 +11,6 @@ pytest = "*"
 [packages]
 sklearn = "*"
 pandas = "*"
-vtreat = "*"
-featuretools = "*"
 imbalanced-learn = "*"
 
 [requires]
