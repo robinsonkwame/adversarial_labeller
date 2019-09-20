@@ -106,11 +106,11 @@ def test_adversarial_factory():
     data = get_train_validate(fillna=True)
     clf = RandomForestClassifier(n_estimators=100)
 
-    # cross_val_score(
-    #     X=data["train"]["data"],
-    #     y=data["train"]["labels"],
-    #     estimator=clf,
-    #     scoring=make_scorer(scorer.grade, greater_is_better=True),
-    #     cv=5,
-    #     n_jobs=-1,
-    #     verbose=1)
+    cross_val_score(
+        X=data["train"]["data"],
+        y=data["train"]["labels"],
+        estimator=clf,
+        scoring=scorer.grade,
+        cv=5,
+        n_jobs=-1,
+        verbose=1)

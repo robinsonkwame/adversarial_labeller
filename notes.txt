@@ -336,3 +336,33 @@ to unit test, but add as to read me as a simple example
 * verify adversarial accuracy is mostly spot on (w/in -/+ 1 point of accuracy)
 
 * modify so it's pip installable
+--
+okay so have in test the class that produces a labeller
+I now need to read in data, pass as a scorer to a 
+CV parameter fit.
+--
+have a sketch for the cross val, as a scorer
+I'm seeing different validation results, which all should
+be the same, I suspect the randomizedCV search is starting
+along different paths, i thought i passed in the same seed value.
+need to double check this
+
+Scorer was also failing, i forget the exact message but I removed teh 
+wrapper (which was in the example) and it seems to work. I now
+see an issue with one of transformers that expects a data frame,
+we now see:
+---
+  File "/Users/kimrobinson/.local/share/virtualenvs/adversarial_validatior-jlSiO2el/lib/python3.7/site-packages/imblearn/pipeline.py", line 347, in predict
+    Xt = transform.transform(Xt)
+  File "/Users/kimrobinson/.local/share/virtualenvs/adversarial_validatior-jlSiO2el/lib/python3.7/site-packages/sklearn/preprocessing/_function_transformer.py", line 153, in transform
+    return self._transform(X, func=self.func, kw_args=self.kw_args)
+  File "/Users/kimrobinson/.local/share/virtualenvs/adversarial_validatior-jlSiO2el/lib/python3.7/site-packages/sklearn/preprocessing/_function_transformer.py", line 179, in _transform
+    return func(X, **(kw_args if kw_args else {}))
+  File "/Users/kimrobinson/Desktop/Kwame/open_source/adversarial_validatior/tests/test_adversarial_labeller.py", line 45, in keep_numeric_columns_only_replace_na
+    return df.select_dtypes(include='number')\
+AttributeError: 'numpy.ndarray' object has no attribute 'select_dtypes'
+---
+
+which suggests that I update the transformer to take in a numpy matrix instead
+so that it'll work on both. I can do this with a wrapper inside teh function
+

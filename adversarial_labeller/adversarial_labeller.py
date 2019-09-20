@@ -28,8 +28,12 @@ class AdversarialRUSBoostLabeller(RUSBoostClassifier, TransformerMixin):
                 y,
                 self.predict(X)
             )
-        if validation_score < 0.50:
+        print(f"maximize_binary_validation_accuracy check score: {validation_score:.2f}")
+
+        if validation_score <= 0.50:
             self.flip_binary_predictions = True
+            print("\twill flip binary predictions...")
+            print(f"\tflipped validation_score:\t {1-validation_score}")
 
     def label(self, X):
         predictions = self.predict(X)
