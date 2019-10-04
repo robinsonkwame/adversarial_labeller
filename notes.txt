@@ -382,3 +382,34 @@ python: can't open file 'pytest': [Errno 2] No such file or directory
 (adversarial_validator) kwame@Puget-168695:$ python -m pytest --version
 This is pytest version 5.2.0, imported from /home/kwame/.local/share/virtualenvs/adversarial_validator-OGseoHRw/lib/python3.7/site-packages/pytest.py
 ```
+
+okay, then you hae to run with `python -m pytest --pdb -s` >:|
+-
+Got the labeller workign int he cv loop, I can't trigger the prediction failure
+but the validation accuracy results have differnt 0, 1 precisions so I know
+that the RandomizedSearchCV or somethign is different somethign idfferent
+but i also pass in a 1 for random state so I'm not where this is coming from.
+--
+Okay so next steps are to include an example with fake data in the README
+Make it pip installable
+
+for RandomizedSearchCV, see this note
+```
+Note that before SciPy 0.16, the scipy.stats.distributions do not
+accept a custom RNG instance and always use the singleton RNG from
+numpy.random. Hence setting random_state will not guarantee a deterministic
+iteration whenever scipy.stats distributions are used to define the parameter
+search space
+```
+
+but
+
+```
+Python 3.7.2 (default, Jan 11 2019, 21:31:15) 
+[GCC 5.4.0 20160609] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import scipy
+>>> scipy.__version__
+'1.3.1'
+```
+so not sure what's up there
