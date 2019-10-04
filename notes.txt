@@ -366,3 +366,19 @@ AttributeError: 'numpy.ndarray' object has no attribute 'select_dtypes'
 which suggests that I update the transformer to take in a numpy matrix instead
 so that it'll work on both. I can do this with a wrapper inside teh function
 
+--
+added some code to convert a numpy matrix to pandas dataframe, drop keep_numeric_columns_only_replace_na
+
+note when intallign in a new directory you must run
+`pipenv shell && pipenv install && pipenv install --dev`
+since --dev has pytest, otherwise it'll call the system version and try to run yourp
+python3 (e.g. python3.5) and you wil lget f string format related errors since it doesn't support f strings
+
+```
+(adversarial_validator) kwame@Puget-168695:$ pytest --version
+This is pytest version 3.5.0, imported from /home/kwame/.local/lib/python3.5/site-packages/pytest.py
+(adversarial_validator) kwame@Puget-168695:$ python pytest --version
+python: can't open file 'pytest': [Errno 2] No such file or directory
+(adversarial_validator) kwame@Puget-168695:$ python -m pytest --version
+This is pytest version 5.2.0, imported from /home/kwame/.local/share/virtualenvs/adversarial_validator-OGseoHRw/lib/python3.7/site-packages/pytest.py
+```

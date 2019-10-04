@@ -33,7 +33,7 @@ class AdversarialRUSBoostLabeller(RUSBoostClassifier, TransformerMixin):
         if validation_score <= 0.50:
             self.flip_binary_predictions = True
             print("\twill flip binary predictions...")
-            print(f"\tflipped validation_score:\t {1-validation_score}")
+            print(f"\tflipped validation_score:\t {1-validation_score:.2f}")
 
     def label(self, X):
         predictions = self.predict(X)
@@ -197,7 +197,7 @@ class AdversarialLabelerFactory(object):
                 "Validation Accuracy: %0.2f" % (
                     accuracy_score(
                         labels[self.test_df.index],
-                        fitted_labeler.predict(
+                        fitted_labeler.label(
                             self.test_df.values
                         )
                     )
@@ -215,10 +215,13 @@ class AdversarialLabelerFactory(object):
 
         # ... return pipeline object that includes
         # the inital_pipeline + this fitted adversarial labeler
-        return ImbalancedPipeline([
-            ('inital_pipeline', self.inital_pipeline),
-            ('adversarial_labeler', fitted_labeler)
-        ])
+        return (
+            ImbalancedPipeline([
+                ('inital_pipeline', self.inital_pipeline),
+                ('adversarial_labeler', fitted_labeler)
+            ]),
+            fitted_labeler.flip_binary_predictions
+        )
 
 class RUSBoostRandomizedCV:
     n_estimators = [int(x) for x in np.linspace(start = 50, stop = 200, num = 10)]
