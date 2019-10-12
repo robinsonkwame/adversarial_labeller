@@ -54,10 +54,6 @@ def get_variable_and_label_columns(df, label_column="label"):
 
 def keep_numeric_columns_only_replace_na(df,
                                          all_columns=COLUMNS):
-    rename_args = {
-        "axis": "columns",
-        "inplace": True
-    }
     transformed_df = None
     if isinstance(df, pd.DataFrame):
         transformed_df =\
@@ -70,7 +66,6 @@ def keep_numeric_columns_only_replace_na(df,
         transformed_df =\
             transformed_df.select_dtypes(include='number')\
                           .fillna(value=-1, axis="columns")        
-
 
     return transformed_df
 
