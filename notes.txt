@@ -444,13 +444,12 @@ scratch
 
 import numpy as np
 from sklearn.datasets.samples_generator import make_blobs
-sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score
 from sklearn.ensemble import RandomForestClassifier
 
 # Our data generation parameters for this example
 number_of_samples = 1000
 number_of_test_samples = 300
-
 
 # Generate data and label a portion as test data
 variables, labels = \
@@ -467,16 +466,14 @@ df = pd.DataFrame(
     'label': 0
   }
 )
-df.loc[-number_of_test_samples:,'label'] = 1
+df.loc[test_indices,'label'] = 1
 
 test_indices = df.index[-number_of_test_samples:]
 train_indices = df.index[:-number_of_test_samples]
 
 # Now perturb the test samples to simulate data drift/different test distribution
-df.loc[
-  test_indices,
-  "independent_variable"
-  ] += np.std(df.independent_variable)
+df.loc[test_indices, "independent_variable"] +=\
+  np.std(df.independent_variable)
 # ... now we have an example of data drift that adversarial labeling 
 # can be used for
 
@@ -513,7 +510,6 @@ average_adversarial_score =\
     np.array(adversarial_scores).mean()
 
 # ... let's see how this compares with normal cross validation
-# and the actual true score
 scores =\
     cross_val_score(
         X=df[train_indices].independent_variable,
@@ -527,6 +523,7 @@ scores =\
 average_score =\
     np.array(scores).mean()
 
+# now let's see how this compares with the actual test score
 clf.fit(df[train_indices].independent_variable,
         df[train_indices].dependent_variable)
 
@@ -536,12 +533,10 @@ actual_score =\
     df[test_indices].dependent_variable
   )
 
-# ... so adversarial validation gave us
-average_adversarial_score
+# ... so adversarial validation gave us a difference of
+abs(average_adversarial_score - actual_score) close to actual
 
-which is abs(average_adversarial_score - actual_score) close to actual
+# ... and normal validation gave us a difference of 
+abs(average_score - actual_score) to actual
 
-# ... and normal validation gave us
-average_score
-
-which is abs(average_score - actual_score) to actual
+# adversarial model validation gives us a better result here
