@@ -483,8 +483,7 @@ labels_for_labeller = df.label
 pipeline, flip_binary_predictions =\
     AdversarialLabelerFactory(
         features = features_for_labeller,
-        labels = labels_for_labeller,
-        inital_pipeline = MyBasicAdversarialPreprocessor
+        labels = labels_for_labeller
     ).fit_with_best_params()
 
 scorer = Scorer(the_scorer=pipeline,
@@ -515,7 +514,6 @@ scores =\
         X=df[train_indices].independent_variable,
         y=df[train_indcies].dependent_variable,
         estimator=clf,
-        scoring=scorer.grade,
         cv=5,
         n_jobs=1,
         verbose=2)
@@ -539,4 +537,5 @@ abs(average_adversarial_score - actual_score) close to actual
 # ... and normal validation gave us a difference of 
 abs(average_score - actual_score) to actual
 
-# adversarial model validation gives us a better result here
+# adversarial model validation gives us a better result 
+# here under this data drift
