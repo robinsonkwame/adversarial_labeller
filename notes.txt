@@ -439,3 +439,109 @@ d)  make a split of training with a portion reserved for test
     get adversarial labelled score
 
     compare to true test, should be similar
+--
+scratch
+
+import numpy as np
+from sklearn.datasets.samples_generator import make_blobs
+sklearn.metrics import accuracy_score
+from sklearn.ensemble import RandomForestClassifier
+
+# Our data generation parameters for this example
+number_of_samples = 1000
+number_of_test_samples = 300
+
+
+# Generate data and label a portion as test data
+variables, labels = \
+  make_blobs(
+    n_samples=number_of_samples,
+    centers=2,
+    n_features=1,
+    random_state=0
+)
+df = pd.DataFrame(
+  {
+    'independent_variable':variables.flatten(),
+    'dependent_variable': labels,
+    'label': 0
+  }
+)
+df.loc[-number_of_test_samples:,'label'] = 1
+
+test_indices = df.index[-number_of_test_samples:]
+train_indices = df.index[:-number_of_test_samples]
+
+# Now perturb the test samples to simulate data drift/different test distribution
+df.loc[
+  test_indices,
+  "independent_variable"
+  ] += np.std(df.independent_variable)
+# ... now we have an example of data drift that adversarial labeling 
+# can be used for
+
+features_for_labeller = df.independent_variable
+labels_for_labeller = df.label
+
+pipeline, flip_binary_predictions =\
+    AdversarialLabelerFactory(
+        features = features_for_labeller,
+        labels = labels_for_labeller,
+        inital_pipeline = MyBasicAdversarialPreprocessor
+    ).fit_with_best_params()
+
+scorer = Scorer(the_scorer=pipeline,
+                flip_binary_predictions=flip_binary_predictions)
+
+clf = RandomForestClassifier(n_estimators=100)
+
+# Now we evaluate a classifer on training data only, but using
+# our fancy adversarial labeller
+
+adversarial_scores =\
+    cross_val_score(
+        X=df[train_indices].independent_variable,
+        y=df[train_indices].dependent_variable,
+        estimator=clf,
+        scoring=scorer.grade,
+        cv=5,
+        n_jobs=1,
+        verbose=2)
+
+# ... and we get ~ xyz
+average_adversarial_score =\
+    np.array(adversarial_scores).mean()
+
+# ... let's see how this compares with normal cross validation
+# and the actual true score
+scores =\
+    cross_val_score(
+        X=df[train_indices].independent_variable,
+        y=df[train_indcies].dependent_variable,
+        estimator=clf,
+        scoring=scorer.grade,
+        cv=5,
+        n_jobs=1,
+        verbose=2)
+
+average_score =\
+    np.array(scores).mean()
+
+clf.fit(df[train_indices].independent_variable,
+        df[train_indices].dependent_variable)
+
+actual_score =\
+  accuracy_score(
+    clf.predict(df[test_indices].independent_variable),
+    df[test_indices].dependent_variable
+  )
+
+# ... so adversarial validation gave us
+average_adversarial_score
+
+which is abs(average_adversarial_score - actual_score) close to actual
+
+# ... and normal validation gave us
+average_score
+
+which is abs(average_score - actual_score) to actual
