@@ -413,3 +413,29 @@ Type "help", "copyright", "credits" or "license" for more information.
 '1.3.1'
 ```
 so not sure what's up there
+---
+x okay, need to test out pip installable
+got somethign basic up, need to remember to update when done with the
+other stuff
+
+hmm, so I'm almost done, I need to write a quite example of use
+so i think i can make data drfit by generating a two features classification 
+problem w sklearn and then shift the mean slightly and mark those test
+
+okay, i got to go to bed here but:
+a) use sample_generator to create read_concat_and_label_test_train_data, with a
+train and test set, where test set is train set + 1 sd or something <-- data drift
+mark with 0 or 1 as appropriate. hold out the test set answers
+b) Call get variables and labels, pass to factory for adver. labeller
+c) create a classifer
+d)  make a split of training with a portion reserved for test
+  classifer, labeller pipeline
+    to cross_val_score
+
+    labeller pipeline should pick from those in test that look like
+    the real test
+
+    get overall score (too optimistic)
+    get adversarial labelled score
+
+    compare to true test, should be similar
