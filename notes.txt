@@ -443,15 +443,18 @@ d)  make a split of training with a portion reserved for test
 scratch
 
 import numpy as np
+import pandas as pd
 from sklearn.datasets.samples_generator import make_blobs
 from sklearn.metrics import accuracy_score
 from sklearn.ensemble import RandomForestClassifier
+from adversarial_labeller import AdversarialLabelerFactory, Scorer
 
-# Our data generation parameters for this example
+# Our blob data generation parameters for this example
 number_of_samples = 1000
 number_of_test_samples = 300
 
-# Generate data and label a portion as test data
+# Generate 1d blob data and label a portion as test data
+# ... 1d blob data can be visualized as a rug plot
 variables, labels = \
   make_blobs(
     n_samples=number_of_samples,
@@ -459,23 +462,25 @@ variables, labels = \
     n_features=1,
     random_state=0
 )
+
 df = pd.DataFrame(
   {
     'independent_variable':variables.flatten(),
     'dependent_variable': labels,
-    'label': 0
+    'label': 0  #  default to train data
   }
 )
-df.loc[test_indices,'label'] = 1
-
 test_indices = df.index[-number_of_test_samples:]
 train_indices = df.index[:-number_of_test_samples]
+
+df.loc[test_indices,'label'] = 1  # ... now we mark instances that are test data
 
 # Now perturb the test samples to simulate data drift/different test distribution
 df.loc[test_indices, "independent_variable"] +=\
   np.std(df.independent_variable)
+
 # ... now we have an example of data drift that adversarial labeling 
-# can be used for
+# can be used for this example
 
 features_for_labeller = df.independent_variable
 labels_for_labeller = df.label
@@ -483,7 +488,8 @@ labels_for_labeller = df.label
 pipeline, flip_binary_predictions =\
     AdversarialLabelerFactory(
         features = features_for_labeller,
-        labels = labels_for_labeller
+        labels = labels_for_labeller,
+        run_pipeline = False
     ).fit_with_best_params()
 
 scorer = Scorer(the_scorer=pipeline,
@@ -539,3 +545,17 @@ abs(average_score - actual_score) to actual
 
 # adversarial model validation gives us a better result 
 # here under this data drift
+--
+#####################################################
+--
+Will continue to modify the above as needed
+
+but inserted some reshaping logic, imbalanced learn doens't like
+feature matrices of (1,), (actually, sklearn might not, since it's 
+undeterminate; could be columns or rows). Need to circle abck and
+verify that the test fixture still works (shoudl sicne it uses a larger
+feature array, won't trigger that reshape logic; but I do stop values
+from being passed down)
+
+anwyay, so the pipeline now runs so the rest of this example
+should be fairly easy (assuming it improves over the standard approach)

@@ -114,7 +114,7 @@ class AdversarialLabelerFactory(object):
     def __init__(self,
                  features,
                  labels,
-                 inital_pipeline,
+                 inital_pipeline=None,
                  run_pipeline=True,
                  param_searcher="RUSBoostRandomizedCV",
                  labeler_type="AdversarialRUSBoostLabeller",
@@ -165,7 +165,7 @@ class AdversarialLabelerFactory(object):
 
         best_params =\
             self.searcher().get_best_parameters(
-                features=features.values,
+                features=features,
                 labels=labels[features.index],
                 **randomized_grid_search_args
             )
@@ -173,22 +173,32 @@ class AdversarialLabelerFactory(object):
         self.best_params = best_params
         return best_params
 
+    def get_1d_shape_if_needed(self, features):
+        _features = features
+        if 1 == len(features.values.shape):
+            # imbalanced learn RUSBoostClassifier
+            # doesn't like shapes of (N=1,) :(
+            _features = features.values.reshape(-1, 1)  
+        return _features
+
     def fit_with_best_params(self, verbose=True):
         best_params = self.best_params
         if not self.best_params:
             best_params = self.get_best_parameters()
 
         features, labels = self.get_features_and_labels()
+        shaped_features = self.get_1d_shape_if_needed(features)
 
         fitted_labeler = self.labeler(
             fit_params=best_params
         ).fit(
-            features.values,
+            shaped_features,
             labels[features.index].values
         )
+        shaped_features = self.get_1d_shape_if_needed(self.test_df)
 
         fitted_labeler.maximize_binary_validation_accuracy(
-            self.test_df.values,
+            shaped_features,
             labels[self.test_df.index]
         )
 
@@ -198,17 +208,19 @@ class AdversarialLabelerFactory(object):
                     accuracy_score(
                         labels[self.test_df.index],
                         fitted_labeler.label(
-                            self.test_df.values
+                            shaped_features
                         )
                     )
                 )
             )
 
+            shaped_test_features =\
+                self.get_1d_shape_if_needed(self.test_df)
             print(
                 classification_report(
                     y_true= labels[self.test_df.index],
                     y_pred= fitted_labeler.predict(
-                                self.test_df.values
+                                shaped_test_features
                             )
                 )
             )
@@ -263,8 +275,14 @@ class RUSBoostRandomizedCV:
                 iid=False
             )
 
+        _features = features
+        if 1 == len(features.values.shape):
+            # imbalanced learn RUSBoostClassifier
+            # doesn't like shapes of (N=1,) ?
+            _features = features.values.reshape(-1, 1)  
+
         clf_random.fit(
-            features,
+            _features,
             labels
         )
 

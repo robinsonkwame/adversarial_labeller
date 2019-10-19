@@ -15,13 +15,13 @@ with open('requirements_dev.txt') as requirements_file:
     ] + requirements
 
 setup(
-    name='Adversarial Validator',
-    version='0.1.0',
-    description='Sklearn compatiable model selection tool for validation models that scores train instances that look the most like test instances.',
+    name='adversarial labeller',
+    version='0.1.3',
+    description='Sklearn compatiable model instance labelling tool to help validate models in situations involving data drift.',
     author="Kwame Porter Robinson",
     author_email='kwamepr@umich.edu',
-    url='https://github.com/robinsonkwame/adversarial_validator',
-    packages=find_packages(include=['adversarial_validator*']),
+    url='https://github.com/robinsonkwame/adversarial_labeller',
+    packages=find_packages(include=['adversarial_labeller*']),
     include_package_data=True,
     install_requires=requirements,
     license="MIT license",
