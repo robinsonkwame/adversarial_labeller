@@ -1,7 +1,7 @@
-# adversarial_validatior
+# adversarial_labeller
 ---
 
-Adversarial valdiator is a sklearn compatible scorer for model selection and is distributed under the MIT license.
+Adversarial labeller is a sklearn compatible labeller that scores instances as belonging to the test dataset or not to help model selection under data drfit. Adverarial labeller is distributed under the MIT license.
 
 ## Installation
 
@@ -17,5 +17,5 @@ Adversarial validator requires:
 
 The easiest way to install adversarial validator is using `pip`
 ```
-pip install adversarial_validator
+pip install adversarial_labeller
 ```
