@@ -559,3 +559,15 @@ from being passed down)
 
 anwyay, so the pipeline now runs so the rest of this example
 should be fairly easy (assuming it improves over the standard approach)
+---
+okay, am able to reproduce to where I left off on a totally new 
+system so I think things are generally reproducible
+I don't like how there's not enough time for the RandomizedSearchCV
+to find a better solution than predicting all 1's, want to see
+if I can bump the time given
+
+yeah, tweaked it to do 200 n_iters (sample of the distribution)
+and we're at 75 accuracy with much better F1 score, yay
+
+k, i'll follow up tmmrw as I can
+----

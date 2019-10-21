@@ -158,7 +158,7 @@ class AdversarialLabelerFactory(object):
                             features=None,
                             labels=None,
                             randomized_grid_search_args={
-                                "n_iter":50
+                                "n_iter":200
                             }):
 
         features, labels = self.get_features_and_labels()
@@ -258,8 +258,8 @@ class RUSBoostRandomizedCV:
                             features,
                             labels,
                             base_estimator=None,
-                            n_iter=20,
-                            cv=2,
+                            n_iter=200,
+                            cv=3,
                             verbose=1,
                             random_state=1,
                             n_jobs=-1):
@@ -272,7 +272,8 @@ class RUSBoostRandomizedCV:
                 verbose=verbose,
                 random_state=random_state,
                 n_jobs=n_jobs,
-                iid=False
+                iid=False,
+                error_score='raise'
             )
 
         _features = features
