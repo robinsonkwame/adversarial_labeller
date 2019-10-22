@@ -115,12 +115,13 @@ average_score =\
 
 # now let's see how this compares with the actual test score
 clf_all = RandomForestClassifier(n_estimators=100, random_state=1)
+clf_all.fit(_X,
+            df.loc[train_indices].dependent_variable)
+
 _X_test = df.loc[test_indices]\
             .independent_variable\
             .values\
             .reshape(-1,1)
-clf_all.fit(_X_test,
-            df.loc[test_indices].dependent_variable)
 
 actual_score =\
   accuracy_score(
@@ -129,8 +130,8 @@ actual_score =\
   )
 
 adversarial_result = abs(average_adversarial_score - actual_score)
-print(f"... adversarial labelled validation was {adversarial_result} percent different than actual.")
+print(f"... adversarial labelled validation was {adversarial_result} points different than actual.")
 
 cross_val_result = abs(average_score - actual_score)
-print(f"... adversarial labelled validation was {cross_val_result:.2f} percent different than actual.")
+print(f"... adversarial labelled validation was {cross_val_result:.2f} points different than actual.")
 ```
