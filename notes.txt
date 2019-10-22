@@ -582,3 +582,39 @@ and we're at 75 accuracy with much better F1 score, yay
 
 k, i'll follow up tmmrw as I can
 ----
+Okay there's something up with the labeller
+I got the machinery all running but look
+
+In [70]: scorer.label(_X_test)                                                                                                   
+Out[70]: 
+array([0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0,
+       0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1,
+       0, 1, 0, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0,
+       0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0,
+       0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0,
+       0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0,
+       0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0,
+       0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0,
+       0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0,
+       0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0,
+       0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0,
+       0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+       0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 1, 0, 1,
+       0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0])
+
+In [71]: sum(scorer.label(_X_test))                                                                                              
+Out[71]: 101
+
+In [72]: sum(scorer.label(_X_test))/len(_X_test)                                                                                 
+Out[72]: 0.33666666666666667
+
+but
+In [71]: sum(scorer.label(_X_test))                                                                                              
+Out[71]: 101
+
+In [72]: sum(scorer.label(_X_test))/len(_X_test)                                                                                 
+Out[72]: 0.33666666666666667
+
+so i'm not sure how the labeller before this but
+it should've flipped binary predictions here or we
+just leave it.
