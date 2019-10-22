@@ -618,3 +618,72 @@ Out[72]: 0.33666666666666667
 so i'm not sure how the labeller before this but
 it should've flipped binary predictions here or we
 just leave it.
+--
+
+I think I conflated somethings in the factory class
+okay, so first potential failure point is the
+validation could be done on already seen data but I'm 
+pretty sure that i split into test, train and run on that
+
+so then, what do i validate on? I wonder if I'm seeing
+order effects? Sample should account for that? 
+Maybe I don't fit to whole dataset, since it's only valideted
+on train split generated after data has been passed in
+
+okay, well there's another issue where sometimes the CV best parameters
+are for somethign that predicst all one class (failure);  should
+be able to detect this and restart or something
+
+re-running
+I suspect part of the issue here is that the test validation results
+don't reproduce
+
+okay, wait, so I now see:
+
+maximize_binary_validation_accuracy check score: 0.69 (keep as is)
+Validation Accuracy: 0.69
+              precision    recall  f1-score   support
+
+           0       0.93      0.60      0.73       103
+           1       0.51      0.89      0.65        47
+
+    accuracy                           0.69       150
+   macro avg       0.72      0.75      0.69       150
+weighted avg       0.79      0.69      0.70       150
+
+
+In [99]: sum(scorer.label(_X_test))/len(_X_test)                                                                                 
+Out[99]: 0.88
+--
+soooooo
+`validation_mask = scorer.label(_X_test) == 1`
+may not be the maskt that I'm looking for; it's all true and false
+no that works out, from what i can tell
+-
+so I can directly reproduce with
+```
+In [126]: validation_mask = scorer.label(_X) == 1                                                                                
+
+In [127]: actual_score2 =\ 
+     ...:   accuracy_score( 
+     ...:     clf_all.predict(_X[validation_mask]), 
+     ...:     df.loc[train_indices].dependent_variable[validation_mask] 
+     ...:   )                                                                                                                    
+
+In [128]: actual_score2                                                                                                          
+Out[128]: 1.0
+```
+
+okay, so it's pretty clear that since clf_all was trained on
+_X, we'd see a 1.0 result. 
+So this suggests that I needt to make yet another hold out
+from _X, train on not that, but test on that
+todo ^
+Alternatively, I could sample from test 
+actually I think that's what's going on here, i confused myself
+by the concurrent test/train sets;
+
+k, wait, no i need hold out part of _X since i'm fitting on it, of course 
+
+I'll try to pick this up tmmrw before my meeting
+-

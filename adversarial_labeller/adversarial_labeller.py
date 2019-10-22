@@ -28,7 +28,7 @@ class AdversarialRUSBoostLabeller(RUSBoostClassifier, TransformerMixin):
                 y,
                 self.predict(X)
             )
-        print(f"maximize_binary_validation_accuracy check score: {validation_score:.2f}")
+        print(f"maximize_binary_validation_accuracy check score: {validation_score:.2f} (keep as is)")
 
         if validation_score <= 0.50:
             self.flip_binary_predictions = True
@@ -195,10 +195,10 @@ class AdversarialLabelerFactory(object):
             shaped_features,
             labels[features.index].values
         )
-        shaped_features = self.get_1d_shape_if_needed(self.test_df)
+        test_shaped_features = self.get_1d_shape_if_needed(self.test_df)
 
         fitted_labeler.maximize_binary_validation_accuracy(
-            shaped_features,
+            test_shaped_features,
             labels[self.test_df.index]
         )
 
@@ -208,19 +208,17 @@ class AdversarialLabelerFactory(object):
                     accuracy_score(
                         labels[self.test_df.index],
                         fitted_labeler.label(
-                            shaped_features
+                            test_shaped_features
                         )
                     )
                 )
             )
 
-            shaped_test_features =\
-                self.get_1d_shape_if_needed(self.test_df)
             print(
                 classification_report(
                     y_true= labels[self.test_df.index],
                     y_pred= fitted_labeler.predict(
-                                shaped_test_features
+                                test_shaped_features
                             )
                 )
             )
