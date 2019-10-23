@@ -687,3 +687,52 @@ k, wait, no i need hold out part of _X since i'm fitting on it, of course
 
 I'll try to pick this up tmmrw before my meeting
 -
+
+Okay, real quick
+scorer.grade, in this run, is preforming well on hold data
+
+maximize_binary_validation_accuracy check score: 0.69 (keep as is)
+Validation Accuracy: 0.69
+              precision    recall  f1-score   support
+
+           0       0.93      0.60      0.73       103
+           1       0.51      0.89      0.65        47
+
+    accuracy                           0.69       150
+   macro avg       0.72      0.75      0.69       150
+weighted avg       0.79      0.69      0.70       150
+
+
+In [99]: sum(scorer.label(_X_test))/len(_X_test)                                                                                 
+Out[99]: 0.88
+
+So, I really should see a difference when cross validating it
+-
+okay, so with the labeller i'm seeing: In [133]: average_adversarial_score                                                                                              
+Out[133]: 0.8176563691838291
+
+w/o the labeller i'm seeing
+
+In [135]: average_score                                                                                                          
+Out[135]: 0.922823103219552
+
+and
+
+# on the hold out data I actually get (the real McCoy)
+actual_score2 =\
+       accuracy_score( 
+         clf_all.predict(_X_test), 
+         df.loc[test_indices].dependent_variable
+       )
+     
+actual_score2
+0.7
+
+so adversarial labelling helps approach the actual hold out score
+
+question now is if more folds will approach 0.7 or not.
+It probably approaches the actual hold out score with a 
+margin of error defined by labelling accuracy, would
+be curious to know the asymptomic behvior
+
+okay, let's modiy the README and clean this up later.
