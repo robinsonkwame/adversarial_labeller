@@ -1,7 +1,7 @@
 # adversarial_labeller
 ---
 
-Adversarial labeller is a sklearn compatible labeller that scores instances as belonging to the test dataset or not to help model selection under data drfit. Adverarial labeller is distributed under the MIT license.
+Adversarial labeller is a sklearn compatible labeller that scores instances as belonging to the test dataset or not to help model selection under data drift. Adversarial labeller is distributed under the MIT license.
 
 ## Installation
 
@@ -15,8 +15,8 @@ Adversarial validator requires:
 
 *User installation*
 
-The easiest way to install adversarial validator is using `pip`
-```
+The easiest way to install adversarial validator is using 
+```pip
 pip install adversarial_labeller
 ```
 
@@ -95,10 +95,10 @@ adversarial_scores =\
         y=df.loc[train_indices].dependent_variable,
         estimator=clf_adver,
         scoring=scorer.grade,
-        cv=5,
-        n_jobs=1,
+        cv=10,
+        n_jobs=-1,
         verbose=2)
-# ... and we get ~ 0.82
+# ... and we get ~ 0.83
 average_adversarial_score =\
     np.array(adversarial_scores).mean()
 
@@ -109,8 +109,8 @@ scores =\
         X=_X,
         y=df.loc[train_indices].dependent_variable,
         estimator=clf,
-        cv=5,
-        n_jobs=1,
+        cv=10,
+        n_jobs=-1,
         verbose=2)
 
 # ... and we get ~ 0.92
@@ -130,8 +130,8 @@ actual_score =\
   )
 
 adversarial_result = abs(average_adversarial_score - actual_score)
-print(f"... adversarial labelled cross validation was {adversarial_result:.2f} points different than actual.")
+print(f"... adversarial labelled cross validation was {adversarial_result:.2f} points different than actual.")  # ... 0.00 points
 
 cross_val_result = abs(average_score - actual_score)
-print(f"... regular validation was {cross_val_result:.2f} points different than actual.")
+print(f"... regular validation was {cross_val_result:.2f} points different than actual.")  # ... 0.23 points
 ```

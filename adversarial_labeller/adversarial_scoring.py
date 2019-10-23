@@ -17,17 +17,21 @@ class Scorer:
         return predictions
 
     def grade(self, estimator, X, y):
+        score = 0
         _X = X
         if self.a_pipeline:
             _X = self.a_pipeline.transform(X)
 
         labelled_test_mask =\
-            self.label(
-                _X
-            ) == 1
+            self.label(_X) == 1
 
-        return  accuracy_score(y_true= y[labelled_test_mask],
-                               y_pred= estimator.predict(
-                                        _X[labelled_test_mask]
-                               )
+        if any(labelled_test_mask):
+            score = \
+                accuracy_score(
+                    y_true= y[labelled_test_mask],
+                    y_pred= estimator.predict(
+                                _X[labelled_test_mask]
+                            )
                 )
+
+        return score

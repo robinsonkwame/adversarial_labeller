@@ -28,7 +28,7 @@ class AdversarialRUSBoostLabeller(RUSBoostClassifier, TransformerMixin):
                 y,
                 self.predict(X)
             )
-        print(f"maximize_binary_validation_accuracy check score: {validation_score:.2f} (keep as is)")
+        print(f"maximize_binary_validation_accuracy check score: {validation_score:.2f}")
 
         if validation_score <= 0.50:
             self.flip_binary_predictions = True
@@ -158,7 +158,7 @@ class AdversarialLabelerFactory(object):
                             features=None,
                             labels=None,
                             randomized_grid_search_args={
-                                "n_iter":200
+                                "n_iter":300
                             }):
 
         features, labels = self.get_features_and_labels()
@@ -256,7 +256,7 @@ class RUSBoostRandomizedCV:
                             features,
                             labels,
                             base_estimator=None,
-                            n_iter=200,
+                            n_iter=300,
                             cv=3,
                             verbose=1,
                             random_state=1,
@@ -271,7 +271,7 @@ class RUSBoostRandomizedCV:
                 random_state=random_state,
                 n_jobs=n_jobs,
                 iid=False,
-                error_score='raise'
+                error_score=0
             )
 
         _features = features
@@ -311,7 +311,7 @@ class RandomForestRandomizedCV:
     def get_best_parameters(self,
                             features,
                             labels,
-                            n_iter=100,
+                            n_iter=300,
                             cv=3,
                             verbose=2,
                             random_state=1,
