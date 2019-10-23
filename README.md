@@ -98,7 +98,7 @@ adversarial_scores =\
         cv=10,
         n_jobs=-1,
         verbose=2)
-# ... and we get ~ 0.83
+# ... and we get ~ 0.70
 average_adversarial_score =\
     np.array(adversarial_scores).mean()
 
