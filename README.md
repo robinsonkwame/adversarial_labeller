@@ -60,8 +60,7 @@ df.loc[test_indices,'label'] = 1  # ... now we mark instances that are test data
 df.loc[test_indices, "independent_variable"] +=\
   np.std(df.independent_variable)
 
-# ... now we have an example of data drift that adversarial labeling 
-# can be used for this example
+# ... now we have an example of data drift where adversarial labeling can be used to better estimate the actual test accuracy
 
 features_for_labeller = df.independent_variable
 labels_for_labeller = df.label
@@ -78,13 +77,18 @@ scorer = Scorer(the_scorer=pipeline,
 
 # Now we evaluate a classifer on training data only, but using
 # our fancy adversarial labeller
-
-# ... sklearn wants firmly defined shapes
-clf_adver = RandomForestClassifier(n_estimators=100, random_state=1)
 _X = df.loc[train_indices]\
        .independent_variable\
        .values\
        .reshape(-1,1)
+
+_X_test = df.loc[test_indices]\
+            .independent_variable\
+            .values\
+            .reshape(-1,1)
+
+# ... sklearn wants firmly defined shapes
+clf_adver = RandomForestClassifier(n_estimators=100, random_state=1)
 adversarial_scores =\
     cross_val_score(
         X=_X,
@@ -94,8 +98,7 @@ adversarial_scores =\
         cv=5,
         n_jobs=1,
         verbose=2)
-
-# ... and we get ~ xyz
+# ... and we get ~ 0.82
 average_adversarial_score =\
     np.array(adversarial_scores).mean()
 
@@ -110,6 +113,7 @@ scores =\
         n_jobs=1,
         verbose=2)
 
+# ... and we get ~ 0.92
 average_score =\
     np.array(scores).mean()
 
@@ -118,11 +122,7 @@ clf_all = RandomForestClassifier(n_estimators=100, random_state=1)
 clf_all.fit(_X,
             df.loc[train_indices].dependent_variable)
 
-_X_test = df.loc[test_indices]\
-            .independent_variable\
-            .values\
-            .reshape(-1,1)
-
+# ... actual test score is 0.70
 actual_score =\
   accuracy_score(
     clf_all.predict(_X_test),
@@ -130,8 +130,8 @@ actual_score =\
   )
 
 adversarial_result = abs(average_adversarial_score - actual_score)
-print(f"... adversarial labelled validation was {adversarial_result} points different than actual.")
+print(f"... adversarial labelled cross validation was {adversarial_result:.2f} points different than actual.")
 
 cross_val_result = abs(average_score - actual_score)
-print(f"... adversarial labelled validation was {cross_val_result:.2f} points different than actual.")
+print(f"... regular validation was {cross_val_result:.2f} points different than actual.")
 ```
