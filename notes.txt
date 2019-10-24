@@ -736,3 +736,14 @@ margin of error defined by labelling accuracy, would
 be curious to know the asymptomic behvior
 
 okay, let's modiy the README and clean this up later.
+--
+
+Okay i was able to reproduce the above, it's pretty amazing.
+I switched the parameter search to use grid search since it was 
+too unreliable to use random search. 
+
+I still needt o circle back and make sure/get the fixture example
+working but I'll do that this weekend or Friday.
+I also would like to update the pypi page but that's a bit far on my todo
+list right now.
+

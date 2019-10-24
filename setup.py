@@ -16,7 +16,7 @@ with open('requirements_dev.txt') as requirements_file:
 
 setup(
     name='adversarial labeller',
-    version='0.1.3',
+    version='0.1.4',
     description='Sklearn compatiable model instance labelling tool to help validate models in situations involving data drift.',
     author="Kwame Porter Robinson",
     author_email='kwamepr@umich.edu',
