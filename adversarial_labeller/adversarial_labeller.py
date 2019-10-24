@@ -158,7 +158,8 @@ class AdversarialLabelerFactory(object):
                             features=None,
                             labels=None,
                             randomized_grid_search_args={
-                                "n_iter":300
+                                "n_iter":300,
+                                "cv": 2
                             }):
 
         features, labels = self.get_features_and_labels()
@@ -240,12 +241,6 @@ class RUSBoostRandomizedCV:
     sampling_strategy = ["majority", "not minority", "not majority", "all"]
     replacement = [True, False]
 
-    random_grid = {'n_estimators': n_estimators,
-                   'learning_rate': learning_rate,
-                   'algorithm': algorithm,
-                   'sampling_strategy': sampling_strategy,
-                   'replacement': replacement}
-
     random_grid = {'algorithm': algorithm,
                    'replacement': replacement,
                    'learning_rate': learning_rate,
@@ -261,14 +256,13 @@ class RUSBoostRandomizedCV:
                             verbose=1,
                             random_state=1,
                             n_jobs=-1):
+
         clf_random =\
-            RandomizedSearchCV(
+            GridSearchCV(
                 estimator=RUSBoostClassifier(),
-                param_distributions=self.random_grid,
-                n_iter=n_iter,
+                param_grid=self.random_grid,
                 cv=cv,
                 verbose=verbose,
-                random_state=random_state,
                 n_jobs=n_jobs,
                 iid=False,
                 error_score=0
