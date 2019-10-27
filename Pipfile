@@ -13,6 +13,7 @@ twine = "*"
 sklearn = "*"
 pandas = "*"
 imbalanced-learn = "*"
+twine = "*"
 
 [requires]
 python_version = "3.7"
