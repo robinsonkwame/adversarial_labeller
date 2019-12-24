@@ -16,6 +16,7 @@ class Scorer:
         if self.flip_binary_predictions:
             predictions ^= 1
 
+        print("\t predicted proba:" , self.the_scorer.predict_proba(X))
         return predictions
 
     def grade(self, estimator, X, y):
@@ -26,6 +27,8 @@ class Scorer:
 
         labelled_test_mask =\
             self.label(_X) == 1
+
+        print(labelled_test_mask, 'labelled test mask')
 
         if any(labelled_test_mask):
             # score = \

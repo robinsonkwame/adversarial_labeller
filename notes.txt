@@ -777,3 +777,76 @@ E       ValueError: not enough values to unpack (expected 3, got 0)
   ... not getting any predicted values (it may not be returning any test labels)
 
 need to look into this later in the week.
+--
+12/24
+- happy christmas eve!
+okay, snuck in some time, i re created the cross validator, it was
+a generator that was exhausted, which probably caused the no score issue above.
+re-running i get this:
+
+tests/test_timeseries_labelled_model_validation.py 	 cross validation score: 0.8314976447141837
+	 holdout_score: 0.9420708235408883
+Fitting 2 folds for each of 800 candidates, totalling 1600 fits
+[Parallel(n_jobs=-1)]: Using backend LokyBackend with 4 concurrent workers.
+[Parallel(n_jobs=-1)]: Done  42 tasks      | elapsed:    5.3s
+[Parallel(n_jobs=-1)]: Done 192 tasks      | elapsed:   36.2s
+[Parallel(n_jobs=-1)]: Done 442 tasks      | elapsed:  1.4min
+[Parallel(n_jobs=-1)]: Done 792 tasks      | elapsed:  2.3min
+[Parallel(n_jobs=-1)]: Done 1600 out of 1600 | elapsed:  2.7min finished
+maximize_binary_validation_accuracy check score: 0.93
+Validation Accuracy: 0.93
+              precision    recall  f1-score   support
+
+           0       0.99      0.93      0.96       127
+           1       0.65      0.94      0.77        18
+
+    accuracy                           0.93       145
+   macro avg       0.82      0.94      0.87       145
+weighted avg       0.95      0.93      0.94       145
+
+	 adversarial cross validation score: -1.8221758553917274e+21
+.
+--
+the cross validation R^2 is basically 0, the same as predicting the mean.
+--
+tests/test_timeseries_labelled_model_validation.py 	 cross validation score: 0.8314976447141837
+Fitting 2 folds for each of 800 candidates, totalling 1600 fits
+[Parallel(n_jobs=-1)]: Using backend LokyBackend with 4 concurrent workers.
+[Parallel(n_jobs=-1)]: Done  42 tasks      | elapsed:    8.9s
+[Parallel(n_jobs=-1)]: Done 192 tasks      | elapsed:   37.1s
+[Parallel(n_jobs=-1)]: Done 442 tasks      | elapsed:  1.3min
+[Parallel(n_jobs=-1)]: Done 792 tasks      | elapsed:  2.2min
+[Parallel(n_jobs=-1)]: Done 1532 tasks      | elapsed:  2.5min
+[Parallel(n_jobs=-1)]: Done 1593 out of 1600 | elapsed:  2.6min remaining:    0.7s
+[Parallel(n_jobs=-1)]: Done 1600 out of 1600 | elapsed:  2.6min finished
+maximize_binary_validation_accuracy check score: 0.88
+Validation Accuracy: 0.88
+              precision    recall  f1-score   support
+
+           0       0.88      1.00      0.93       127
+           1       0.00      0.00      0.00        18
+
+    accuracy                           0.88       145
+   macro avg       0.44      0.50      0.47       145
+weighted avg       0.77      0.88      0.82       145
+
+	 adversarial cross validation score: 0.0
+	 actual hold out score: 0.9420708235408883
+.
+
+--
+okay, so i reorded some of the print out, double checked that everything is using
+the same metric. Let me look at the test labels that are coming out; 
+it's possible that requiring label = 1 is too stringent of a test.
+
+Another thing I'm noticing is that the labeller is outputing different accuracy
+per run, which it shouldn't since it does a grid run. EDIT - the last run matched the above,
+not sure where the randomness is coming from.
+
+An inspection of the masks all reveal False :(
+--
+okay, so i investigated the predicited probabilities and very few greater than 50%
+for the test label. Additionally, since this is a timeseries, the 
+folds are not iid and it makes sense that not much really matches.
+
+I'm thinking I should use proba threshold
