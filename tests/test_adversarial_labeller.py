@@ -126,7 +126,8 @@ def test_adversarial_factory():
         ).fit_with_best_params()
 
     scorer = Scorer(the_scorer=pipeline,
-                    flip_binary_predictions=flip_binary_predictions)
+                    flip_binary_predictions=flip_binary_predictions,
+                    metric=)
 
     data = get_train_validate(fillna=True)
     clf = RandomForestClassifier(n_estimators=100)

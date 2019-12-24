@@ -164,11 +164,12 @@ class AdversarialLabelerFactory(object):
                             }):
 
         features, labels = self.get_features_and_labels()
-        1/0
-        if isinstance(labels, pd.DataFrame):
-            labels_to_use = labels.loc[features.index].values.ravel()
-        else: # ... assume array
-            labels_to_use = labels[features.index].ravel()
+
+        # if isinstance(labels, pd.DataFrame):
+        #     labels_to_use = labels.loc[features.index, :].values.ravel()
+        # else: # ... assume array
+        #     labels_to_use = labels[features.index].ravel()
+        labels_to_use = self.get_label_to_use(features, labels)
 
         best_params =\
             self.searcher().get_best_parameters(
@@ -188,32 +189,74 @@ class AdversarialLabelerFactory(object):
             _features = features.values.reshape(-1, 1)  
         return _features
 
+    def get_label_to_use(self, features, labels):
+        labels_to_use = None
+        if isinstance(labels, pd.DataFrame):
+            labels_to_use = labels.loc[features.index, :].values.ravel()
+        else: # ... assume array
+            labels_to_use = labels[features.index].ravel()
+        return labels_to_use
+
     def fit_with_best_params(self, verbose=True):
         best_params = self.best_params
         if not self.best_params:
             best_params = self.get_best_parameters()
 
+        # features, labels = self.get_features_and_labels()
         features, labels = self.get_features_and_labels()
+        labels_to_use = self.get_label_to_use(features, labels)
         shaped_features = self.get_1d_shape_if_needed(features)
 
+        # fitted_labeler = self.labeler(
+        #     fit_params=best_params
+        # ).fit(
+        #     shaped_features,
+        #     labels[features.index].values
+        # )
         fitted_labeler = self.labeler(
             fit_params=best_params
         ).fit(
             shaped_features,
-            labels[features.index].values
+            labels_to_use
         )
         test_shaped_features = self.get_1d_shape_if_needed(self.test_df)
 
+        test_labels_to_use = self.get_label_to_use(self.test_df, labels)
+        # fitted_labeler.maximize_binary_validation_accuracy(
+        #     test_shaped_features,
+        #     labels[self.test_df.index]
+        # )
         fitted_labeler.maximize_binary_validation_accuracy(
             test_shaped_features,
-            labels[self.test_df.index]
+            test_labels_to_use
         )
+
+        # if verbose:
+        #     print(
+        #         "Validation Accuracy: %0.2f" % (
+        #             accuracy_score(
+        #                 labels[self.test_df.index],
+        #                 fitted_labeler.label(
+        #                     test_shaped_features
+        #                 )
+        #             )
+        #         )
+        #     )
+
+        #     print(
+        #         classification_report(
+        #             y_true= labels[self.test_df.index],
+        #             y_pred= fitted_labeler.predict(
+        #                         test_shaped_features
+        #                     )
+        #         )
+        #     )
 
         if verbose:
             print(
                 "Validation Accuracy: %0.2f" % (
                     accuracy_score(
-                        labels[self.test_df.index],
+                        test_labels_to_use,
                         fitted_labeler.label(
                             test_shaped_features
                         )
@@ -223,7 +266,7 @@ class AdversarialLabelerFactory(object):
 
             print(
                 classification_report(
-                    y_true= labels[self.test_df.index],
+                    y_true= test_labels_to_use,
                     y_pred= fitted_labeler.predict(
                                 test_shaped_features
                             )

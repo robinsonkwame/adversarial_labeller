@@ -4,7 +4,9 @@ class Scorer:
     def __init__(self, 
                  the_scorer,
                  a_pipeline=None,
-                 flip_binary_predictions=False):
+                 flip_binary_predictions=False,
+                 metric=accuracy_score):
+        self.metric = metric
         self.the_scorer = the_scorer
         self.a_pipeline = a_pipeline
         self.flip_binary_predictions = flip_binary_predictions
@@ -26,12 +28,18 @@ class Scorer:
             self.label(_X) == 1
 
         if any(labelled_test_mask):
+            # score = \
+            #     accuracy_score(
+            #         y_true= y[labelled_test_mask],
+            #         y_pred= estimator.predict(
+            #                     _X[labelled_test_mask]
+            #                 )
+            #     )
             score = \
-                accuracy_score(
+                self.metric(
                     y_true= y[labelled_test_mask],
                     y_pred= estimator.predict(
                                 _X[labelled_test_mask]
                             )
                 )
-
         return score
