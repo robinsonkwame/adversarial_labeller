@@ -5,19 +5,27 @@ class Scorer:
                  the_scorer,
                  a_pipeline=None,
                  flip_binary_predictions=False,
-                 metric=accuracy_score):
+                 metric=accuracy_score,
+                 predict_proba_threshold=1.0):
         self.metric = metric
         self.the_scorer = the_scorer
         self.a_pipeline = a_pipeline
         self.flip_binary_predictions = flip_binary_predictions
+        self.predict_proba_threshold = predict_proba_threshold
 
     def label(self, X):
-        predictions = self.the_scorer.predict(X)
+        # predictions = self.the_scorer.predict(X)
+        # if self.flip_binary_predictions:
+        #     predictions ^= 1
+
+        # print("\t predicted proba:" , self.the_scorer.predict_proba(X))
+        predicted_proba = self.the_scorer.predict_proba(X)[:,1]
         if self.flip_binary_predictions:
-            predictions ^= 1
+            #predictions ^= 1
+            predicted_proba -= 1
 
         print("\t predicted proba:" , self.the_scorer.predict_proba(X))
-        return predictions
+        return predicted_proba
 
     def grade(self, estimator, X, y):
         score = 0
@@ -25,8 +33,10 @@ class Scorer:
         if self.a_pipeline:
             _X = self.a_pipeline.transform(X)
 
+        # labelled_test_mask =\
+        #     self.label(_X) == 1
         labelled_test_mask =\
-            self.label(_X) == 1
+            self.label(_X) >= self.predict_proba_threshold 
 
         print(labelled_test_mask, 'labelled test mask')
 
