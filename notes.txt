@@ -764,3 +764,16 @@ even though it's easier to identify the out of sample instances.
 Given that this is a random forest, which does horribly on timeseries,
 this easily could mis lead me to think the adverarial classifier doesn't work
 in this case.
+---
+```
+        if return_estimator:
+            fitted_estimators = zipped_scores.pop()
+>       test_scores, fit_times, score_times = zipped_scores
+E       ValueError: not enough values to unpack (expected 3, got 0)
+
+../../.local/share/virtualenvs/adversarial_labeller-OVgwaBZX/lib/python3.7/site-packages/sklearn/model_selection/_validation.py:240: ValueError
+```
+ okay so i corrected the label flipping and now have the error above
+  ... not getting any predicted values (it may not be returning any test labels)
+
+need to look into this later in the week.
