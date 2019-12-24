@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from sklearn.metrics import accuracy_score, classification_report
 from sklearn.base import TransformerMixin
 from sklearn.model_selection import RandomizedSearchCV, GridSearchCV
@@ -163,11 +164,16 @@ class AdversarialLabelerFactory(object):
                             }):
 
         features, labels = self.get_features_and_labels()
+        1/0
+        if isinstance(labels, pd.DataFrame):
+            labels_to_use = labels.loc[features.index].values.ravel()
+        else: # ... assume array
+            labels_to_use = labels[features.index].ravel()
 
         best_params =\
             self.searcher().get_best_parameters(
                 features=features,
-                labels=labels[features.index],
+                labels=labels_to_use,
                 **randomized_grid_search_args
             )
         

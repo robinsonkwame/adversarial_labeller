@@ -746,4 +746,10 @@ I still needt o circle back and make sure/get the fixture example
 working but I'll do that this weekend or Friday.
 I also would like to update the pypi page but that's a bit far on my todo
 list right now.
+--
+12/23
 
+Starting back up on this after finishing out the semester
+need to make sure it first runs as expected, then copy over the extra tests
+and debug/fix until they work as well. Then I can move on to the 
+other repo.
