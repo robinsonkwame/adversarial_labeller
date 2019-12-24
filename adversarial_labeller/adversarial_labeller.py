@@ -39,7 +39,7 @@ class AdversarialRUSBoostLabeller(RUSBoostClassifier, TransformerMixin):
     def label(self, X):
         predictions = self.predict(X)
         if self.flip_binary_predictions:
-            predictions ^= 1
+            predictions = predictions.astype('int') ^ 1
 
         return predictions
 

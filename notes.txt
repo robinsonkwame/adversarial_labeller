@@ -753,3 +753,14 @@ Starting back up on this after finishing out the semester
 need to make sure it first runs as expected, then copy over the extra tests
 and debug/fix until they work as well. Then I can move on to the 
 other repo.
+Okay, pytest runs fine. Now for 
+--
+okay, so I got something working end to end, still need to
+double check that it's doing what I think it's doing.
+
+Unfortunately it looks like I'm scoring the same as before 
+even though it's easier to identify the out of sample instances.
+
+Given that this is a random forest, which does horribly on timeseries,
+this easily could mis lead me to think the adverarial classifier doesn't work
+in this case.
