@@ -30,6 +30,8 @@ from sklearn.model_selection import cross_val_score
 from sklearn.ensemble import RandomForestClassifier
 from adversarial_labeller import AdversarialLabelerFactory, Scorer
 
+scoring_metric = accuracy_score
+
 # Our blob data generation parameters for this example
 number_of_samples = 1000
 number_of_test_samples = 300
@@ -37,7 +39,7 @@ number_of_test_samples = 300
 # Generate 1d blob data and label a portion as test data
 # ... 1d blob data can be visualized as a rug plot
 variables, labels = \
-  make_blobs(
+make_blobs(
     n_samples=number_of_samples,
     centers=2,
     n_features=1,
@@ -45,11 +47,11 @@ variables, labels = \
 )
 
 df = pd.DataFrame(
-  {
+{
     'independent_variable':variables.flatten(),
     'dependent_variable': labels,
     'label': 0  #  default to train data
-  }
+}
 )
 test_indices = df.index[-number_of_test_samples:]
 train_indices = df.index[:-number_of_test_samples]
@@ -58,7 +60,7 @@ df.loc[test_indices,'label'] = 1  # ... now we mark instances that are test data
 
 # Now perturb the test samples to simulate data drift/different test distribution
 df.loc[test_indices, "independent_variable"] +=\
-  np.std(df.independent_variable)
+np.std(df.independent_variable)
 
 # ... now we have an example of data drift where adversarial labeling can be used to better estimate the actual test accuracy
 
@@ -78,9 +80,9 @@ scorer = Scorer(the_scorer=pipeline,
 # Now we evaluate a classifer on training data only, but using
 # our fancy adversarial labeller
 _X = df.loc[train_indices]\
-       .independent_variable\
-       .values\
-       .reshape(-1,1)
+    .independent_variable\
+    .values\
+    .reshape(-1,1)
 
 _X_test = df.loc[test_indices]\
             .independent_variable\
@@ -98,7 +100,7 @@ adversarial_scores =\
         cv=10,
         n_jobs=-1,
         verbose=1)
-# ... and we get ~ 0.70
+# ... and we get ~ 0.70 - 0.68
 average_adversarial_score =\
     np.array(adversarial_scores).mean()
 
@@ -124,14 +126,16 @@ clf_all.fit(_X,
 
 # ... actual test score is 0.70
 actual_score =\
-  accuracy_score(
+accuracy_score(
     clf_all.predict(_X_test),
     df.loc[test_indices].dependent_variable
-  )
+)
 
 adversarial_result = abs(average_adversarial_score - actual_score)
-print(f"... adversarial labelled cross validation was {adversarial_result:.2f} points different than actual.")  # ... 0.00 points
+print(f"... adversarial labelled cross validation was {adversarial_result:.2f} points different than actual.")  # ... 0.00 - 0.02 points
 
 cross_val_result = abs(average_score - actual_score)
 print(f"... regular validation was {cross_val_result:.2f} points different than actual.")  # ... 0.23 points
+
+#  See tests/ for additional examples, including against the Titanic and stock market trading
 ```

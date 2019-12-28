@@ -986,3 +986,45 @@ to be used int eh calculating the r2 score, I believe, hence the different r2 sc
 really speaks to the linear fit and not to the quality of the fit overall; RMSE is a better metric here.
 
 Interestingly, when I switched the metric to RMSE everything started working as expected. Go figure.
+-
+okay, re-running README example, it works. The Titantic test example however does not, fixing that back up
+I think the labeller isn't finding anything (sicen it defaults to proba 1)
+
+ah intersting,
+```
+(Pdb) scorer.label(data["train"]["data"])
+array([-0.51656686, -0.51656686, -0.51656686, -0.51656686, -0.51656686,
+       -0.51656686, -0.51656686, -0.51656686, -0.43343674, -0.51656686,
+       -0.51656686, -0.51656686, -0.51656686, -0.4797789 , -0.51656686,
+       -0.51656686, -0.51656686, -0.51656686, -0.51656686, -0.51656686,
+       -0.51656686, -0.51656686, -0.51656686, -0.51656686, -0.51656686,
+       -0.51656686, -0.51656686, -0.51656686, -0.51656686, -0.51656686,
+       -0.43343674, -0.51656686, -0.51656686, -0.51656686, -0.51656686,
+       -0.51656686, -0.51656686, -0.51656686, -0.51656686, -0.51656686,
+```
+uh
+ah,
+```
+(Pdb) scorer.flip_binary_predictions
+True
+```
+oh, i need to flip the order of subtraction. Let's try this again... unittesting is awesome.
+
+I stil lnotice some randomness in the adverarial labeling runs, not sure where this is coming form
+same error, changing predict_proba_threshold to 0.5 which is more natural than 1 for binary classes
+--
+Now we get
+```
+  File "/home/kwame/.local/share/virtualenvs/adversarial_labeller-ZBbehAeN/lib/python3.7/site-packages/sklearn/metrics/_scorer.py", line 89, in __call__
+    score = scorer(estimator, *args, **kwargs)
+  File "/hdd/work/adversarial_labeller/adversarial_labeller/adversarial_scoring.py", line 38, in grade
+    _X[labelled_test_mask]
+TypeError: __call__() got an unexpected keyword argument 'y_pred'
+```
+
+ah so the metric must not support that.
+okay so what i did was just let cross_val_score default to its scorer and 
+let the default (accuracy) scorerer be used in the Scorer. The error line suggests that
+using y_pred as a kind of classification report is wrong, and it probably is, but I'm going to
+leave this as is.
+--

@@ -21,7 +21,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='adversarial labeller',
-    version='0.1.5',
+    version='0.1.7',
     description='Sklearn compatiable model instance labelling tool to help validate models in situations involving data drift.',
     long_description=long_description,
     long_description_content_type='text/markdown',
