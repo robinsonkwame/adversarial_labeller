@@ -1,5 +1,6 @@
 from sklearn.metrics import accuracy_score
 
+
 class Scorer:
     def __init__(self, 
                  the_scorer,

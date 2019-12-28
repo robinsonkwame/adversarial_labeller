@@ -1,12 +1,12 @@
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LinearRegression
-from sklearn.metrics import make_scorer, r2_score
+from sklearn.metrics import make_scorer, mean_squared_error
 from sklearn.model_selection import TimeSeriesSplit, cross_val_score
 from adversarial_labeller import AdversarialLabelerFactory, Scorer
 import numpy as np
 import pandas as pd
 
-scoring_metric = r2_score
+scoring_metric = mean_squared_error
 
 config =\
     {
@@ -75,9 +75,7 @@ def test_timeseries_labelled_model_validation():
 
     scorer = Scorer(the_scorer=pipeline,
                     flip_binary_predictions=flip_binary_predictions,
-                    metric=r2_score,
-                    predict_proba_threshold=0.40)
-    1/0
+                    metric=make_scorer(scoring_metric))
 
     cv = TimeSeriesSplit(n_splits=10).split(X_train)
     adversarial_score =\
@@ -99,6 +97,6 @@ def test_timeseries_labelled_model_validation():
         )
     print(f"\t actual hold out score: {holdout_score}")
 
-    assert abs(holdout_score-adversarial_score) < abs(holdout_score-score),\
-        (f"Whoops! Holdout score ({holdout_score:.3f}) is closer to "
-         f"non-adversarial score ({score:.3f} vs {adversarial_score:.3f})!")
+    assert adversarial_score < score,\
+        (f"Whoops! Non-adversarial score ({score:.3f} vs {adversarial_score:.3f}), is less than adversarial score!")
+

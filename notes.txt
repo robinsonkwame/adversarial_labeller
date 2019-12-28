@@ -964,3 +964,25 @@ Ks_2sampResult(statistic=0.7845433255269321, pvalue=1.8978276727921184e-09)
 -
 The other thing to consider is how out of sample testing is or is not
 appropriate for time series testing; but 
+---
+12/28
+
+Okay, after reading through dependent data structure, time series and validation and considering
+what other adversarial approaches did on timeseries data, I need to revise the the test code
+to address the dependent nature of the data as well. Since the test labels are all towarsd the end,
+and with good reason, we're returning 0 for the starting CV blocks and the dependent structure in 
+later blocks isn't matched to the dependent structure in the test data, so when we test against
+test data we're seeing crappy scores.
+
+I think what I should do is just apply the Scorer.grade on the X_test to create a mask and
+take the non mask as training data and the mask as test data; I believe I've eseentially seen this
+in a similar adverarial attempt. 
+
+Another strategy is to do repeated out of sample tests but I'm not sure I want to do all of that.
+--
+okay, so I changed the metric from r2 score to RMSE; r2 score measures the fit of the regression linear fit 
+to the data. However, we have stock market data which is not linear. My scorer was filtering out some data
+to be used int eh calculating the r2 score, I believe, hence the different r2 scores. Furthermore, r2 score
+really speaks to the linear fit and not to the quality of the fit overall; RMSE is a better metric here.
+
+Interestingly, when I switched the metric to RMSE everything started working as expected. Go figure.
