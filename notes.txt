@@ -851,4 +851,116 @@ folds are not iid and it makes sense that not much really matches.
 
 I'm thinking I should use proba threshold
 -
-added. re-running
+added threshold. re-running
+okay, so I'm seeing -0.28 r^2 at a 0.59 threshold.
+Seeing if I can reproduce the same result with no grader
+by setting the threshold to 0.1 (should allow every instance to be used for
+cross validation)
+-
+okay, this is what I'm seeing
+threshold # 0.1, 0.2,  .4    0.59
+r^2 score # 0.83 0.83 0.00  -0.23
+
+I should re-run the original (first test), make sure it's
+as expected, then more thoroughly consider the problem. I
+think there's is difference between data shift and timeseries
+whereby testing on folds isn't quite right or i'm learning
+to classify samples wrong?
+-
+The problem is, really, the labelling distribution must be somehow 
+different than the actual test distribution and/or the splits
+tested are different (since we're pickign subsets)
+--
+(Pdb) X_test.groupby([X_test.index.day, X_test.index.hour]).mean()
+                        Open       High        Low        Volume  OpenInt
+Datetime Datetime                                                        
+5        20        81.393333  81.402222  81.388889    739.666667      0.0
+         21        81.357500  81.374167  81.346667   1758.666667      0.0
+         22        81.310000  81.360000  81.300000   4737.000000      0.0
+6        15        81.409000  81.419000  81.398000  22654.000000      0.0
+         16        81.403667  81.410000  81.393250  11187.166667      0.0
+         17        81.412500  81.414250  81.404583   8725.166667      0.0
+         18        81.414583  81.418750  81.408750   5302.666667      0.0
+         19        81.418333  81.419167  81.413750   9378.916667      0.0
+         20        81.440417  81.446667  81.434583  12191.250000      0.0
+         21        81.475833  81.489167  81.465425   8092.250000      0.0
+         22        81.500000  81.500000  81.460000   4983.000000      0.0
+
+so here we see that the test Volumne is much higher, compare to train
+which is all over the place (including values a mag. higher and just as low)
+
+Let's look at the y value,
+import scipy
+from scipy.stats import ks_2samp
+ks_2samp(y_train, y_test)
+Ks_2sampResult(statistic=0.9261751152073733, pvalue=1.3322676295501878e-15)
+
+So, then, uh, the labeller should be able to select instances such that
+the Ks_2sample result has a p-value > 0.05
+-
+k = scorer.label(X_train)
+(Pdb) ks_2samp(y_train[k>0.50], y_test)
+Ks_2sampResult(statistic=0.5542857142857143, pvalue=0.0004939356767378333)
+^ using a lower k> threshold results in a smaller and small pvalue
+but that's still a pretty small pvalue.
+
+Also, looking at the predicted_proba over X_train, we see it grow to 0.55 test label
+more as it gets closer to the end of the timeseries.
+-
+(Pdb) m = scorer.label(X_test)
+(Pdb) m
+array([0.55172912, 0.55172912, 0.55172912, 0.55172912, 0.55172912,
+       0.55172912, 0.55172912, 0.55172912, 0.55172912, 0.55172912,
+       0.55172912, 0.55172912, 0.35510114, 0.35510114, 0.55172912,
+       0.55172912, 0.55172912, 0.55172912, 0.55172912, 0.55172912,
+       0.37444049, 0.37444049, 0.55172912, 0.55172912, 0.55172912,
+       0.55172912, 0.55172912, 0.55172912, 0.55172912, 0.55172912,
+       0.55172912, 0.55172912, 0.55172912, 0.55172912, 0.55172912,
+       0.55172912, 0.55172912, 0.55172912, 0.55172912, 0.55172912,
+       0.55172912, 0.55172912, 0.55172912, 0.55172912, 0.55172912,
+       0.55172912, 0.55172912, 0.55172912, 0.55172912, 0.55172912,
+       0.55172912, 0.55172912, 0.55172912, 0.55172912, 0.55172912,
+       0.55172912, 0.55172912, 0.55172912, 0.55172912, 0.55172912,
+       0.55172912, 0.55172912, 0.55172912, 0.55172912, 0.55172912,
+       0.55172912, 0.55172912, 0.55172912, 0.55172912, 0.55172912,
+       0.55172912, 0.55172912, 0.55172912, 0.55172912, 0.55172912,
+       0.55172912, 0.55172912, 0.55172912, 0.55172912, 0.55172912,
+       0.55172912, 0.55172912, 0.55172912, 0.55172912, 0.55172912,
+       0.55172912, 0.55172912, 0.55172912, 0.55172912, 0.55172912,
+       0.55172912, 0.55172912, 0.55172912, 0.55172912, 0.55172912,
+       0.55172912, 0.55172912, 0.55172912, 0.55172912, 0.55172912])
+-
+^ this actually might be useful to set a threshold (since we know what
+the test data is)
+
+okay, so now we should uh predict on that
+-
+(Pdb) y_train[k>0.55]
+array([81.365, 81.36 , 81.38 , 81.37 , 81.34 , 81.35 , 81.48 , 81.36 ,
+       81.35 , 81.37 , 81.36 , 81.42 , 81.43 , 81.42 ])
+(Pdb) scoring_metric
+<function r2_score at 0x10fa7c7a0>
+(Pdb) scoring_metric(y_train[k>0.55], clf.predict(X_train[k>0.55])
+*** SyntaxError: unexpected EOF while parsing
+(Pdb) scoring_metric(y_train[k>0.55], clf.predict(X_train[k>0.55]))
+*** sklearn.exceptions.NotFittedError: This LinearRegression instance is not fitted yet. Call 'fit' with appropriate arguments before using this method.
+(Pdb) clf = LinearRegression(fit_intercept=True, normalize=False, n_jobs=-1)
+(Pdb) clf.fit(X_train[k<0.55], y_train[k<0.55])
+LinearRegression(copy_X=True, fit_intercept=True, n_jobs=-1, normalize=False)
+(Pdb) scoring_metric(y_train[k>0.55], clf.predict(X_train[k>0.55]))
+-0.5607937416014719
+
+Okkkkkkkaaaay, hmm. so the distributions are different.
+---
+(Pdb) scoring_metric(y_train[k>0.55], clf.predict(X_train[k>0.55]))
+-0.5607937416014719
+(Pdb) scoring_metric(y_test, clf.predict(X_test))
+0.9504252213996738
+(Pdb) 
+---
+and,
+(Pdb) ks_2samp(y_train[k>0.55], y_train[k<=0.55])
+Ks_2sampResult(statistic=0.7845433255269321, pvalue=1.8978276727921184e-09)
+-
+The other thing to consider is how out of sample testing is or is not
+appropriate for time series testing; but 

@@ -24,7 +24,7 @@ class Scorer:
             #predictions ^= 1
             predicted_proba -= 1
 
-        print("\t predicted proba:" , self.the_scorer.predict_proba(X))
+        #print("\t predicted proba:" , self.the_scorer.predict_proba(X))
         return predicted_proba
 
     def grade(self, estimator, X, y):
@@ -38,7 +38,7 @@ class Scorer:
         labelled_test_mask =\
             self.label(_X) >= self.predict_proba_threshold 
 
-        print(labelled_test_mask, 'labelled test mask')
+        #print(labelled_test_mask, 'labelled test mask')
 
         if any(labelled_test_mask):
             # score = \
