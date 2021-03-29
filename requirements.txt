@@ -19,7 +19,7 @@ pkginfo==1.5.0.1
 pluggy==0.13.1
 py==1.8.1
 pycparser==2.19
-pygments==2.5.2
+pygments==2.7.4
 pyparsing==2.4.6
 pytest==5.3.2
 python-dateutil==2.8.1
