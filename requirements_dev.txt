@@ -29,7 +29,7 @@ prompt-toolkit==3.0.2
 ptyprocess==0.6.0
 py==1.10.0
 pycparser==2.19
-pygments==2.5.2
+pygments==2.7.4
 pylint==2.4.4
 pyparsing==2.4.6
 pytest==5.3.2
