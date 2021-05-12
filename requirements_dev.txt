@@ -27,7 +27,7 @@ pkginfo==1.5.0.1
 pluggy==0.13.1
 prompt-toolkit==3.0.2
 ptyprocess==0.6.0
-py==1.8.1
+py==1.10.0
 pycparser==2.19
 pygments==2.5.2
 pylint==2.4.4
